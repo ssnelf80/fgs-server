@@ -2,6 +2,7 @@
 using FGS.Auth.Entities;
 using FGS.Auth.Enums;
 using FGS.Auth.Managers;
+using FGS.Auth.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -13,6 +14,7 @@ public static class ServiceExtensions
     {
         builder.Services.AddDbContext<AuthContext>(options =>
             options.UseNpgsql(builder.Configuration.GetConnectionString("AuthConnection")));
+        builder.Services.AddScoped<UserService>();
 
         builder.Services.AddIdentity<FgsUser, FgsRole>(o =>
             {

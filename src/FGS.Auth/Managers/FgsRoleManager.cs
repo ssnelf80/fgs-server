@@ -15,18 +15,18 @@ public class FgsRoleManager(
 {
     public async Task<IdentityResult> CreateDefaultRolesAsync()
     {
-        var result = await CreateAsync(new FgsRole(nameof(FgsUserRoles.Admin)));
+        var result = await CreateAsync(new FgsRole(nameof(FgsUserRole.Admin)));
         if (!result.Succeeded)
             return result;
 
-        result = await CreateAsync(new FgsRole(nameof(FgsUserRoles.Player)));
+        result = await CreateAsync(new FgsRole(nameof(FgsUserRole.Player)));
         if (!result.Succeeded)
             return result;
 
-        result = await CreateAsync(new FgsRole(nameof(FgsUserRoles.Master)));
+        result = await CreateAsync(new FgsRole(nameof(FgsUserRole.Master)));
         if (!result.Succeeded)
             return result;
 
-        return await CreateAsync(new FgsRole(nameof(FgsUserRoles.Spectator)));
+        return await CreateAsync(new FgsRole(nameof(FgsUserRole.Spectator)));
     }
 }

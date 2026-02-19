@@ -1,6 +1,6 @@
 ﻿namespace FGS.Auth.Enums;
 
-public enum FgsUserRoles
+public enum FgsUserRole
 {
     Admin,
     Player,

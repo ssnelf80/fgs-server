@@ -12,4 +12,5 @@ public abstract class BaseSearchFilter
    
     public bool IgnoreCase { get; set; } = false;
     public string SearchString { get; set; } = string.Empty;
+    public string GetLowercaseSearchString() => SearchString.ToLower();
 }

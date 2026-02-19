@@ -28,10 +28,10 @@ public class FgsUserManager(
             return identityResult;
         
         return await AddToRolesAsync(user, 
-        [nameof(FgsUserRoles.Admin), 
-            nameof(FgsUserRoles.Player), 
-            nameof(FgsUserRoles.Master), 
-            nameof(FgsUserRoles.Spectator)]);
+        [nameof(FgsUserRole.Admin), 
+            nameof(FgsUserRole.Player), 
+            nameof(FgsUserRole.Master), 
+            nameof(FgsUserRole.Spectator)]);
     }
 }
 
