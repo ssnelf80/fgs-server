@@ -12,7 +12,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\FGS.Auth\FGS.Auth.csproj" />
+      <ProjectReference Include="..\FGS.Auth\FGS.Auth.csproj" />
     </ItemGroup>
 
 </Project>
