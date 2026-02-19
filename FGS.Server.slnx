@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/common/">
+    <File Path=".gitignore" />
+    <File Path="Directory.Packages.props" />
+  </Folder>
+  <Project Path="FGS.Auth/FGS.Auth.csproj" />
+  <Project Path="FGS.Common/FGS.Common.csproj" />
+  <Project Path="src/FGS.Host/FGS.Host.csproj" />
+</Solution>
