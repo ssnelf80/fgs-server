@@ -14,7 +14,7 @@ public static class ServiceExtensions
     {
         builder.Services.AddDbContext<AuthContext>(options =>
             options.UseNpgsql(builder.Configuration.GetConnectionString("AuthConnection")));
-        builder.Services.AddScoped<UserService>();
+        builder.Services.AddScoped<FgsUserService>();
 
         builder.Services.AddIdentity<FgsUser, FgsRole>(o =>
             {

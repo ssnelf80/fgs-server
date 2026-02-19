@@ -10,7 +10,7 @@ namespace FGS.Host.Controllers;
 [ApiController]
 [Authorize]
 [Route("user")]
-public class UserController(SignInManager<FgsUser> signInManager, UserService userService) : ControllerBase
+public class UserController(SignInManager<FgsUser> signInManager, FgsUserService fgsUserService) : ControllerBase
 {
     [HttpGet]
     [Route("current/roles")]
@@ -30,7 +30,7 @@ public class UserController(SignInManager<FgsUser> signInManager, UserService us
         bool? ingnoreCase, 
         CancellationToken cancellationToken)
     {
-        return await userService.GetUsersAsync(new UserEntitySearchFilter
+        return await fgsUserService.GetUsersAsync(new FgsUserEntitySearchFilter
         {
             Offset = offset ?? 0,
             Limit = limit ?? 20,

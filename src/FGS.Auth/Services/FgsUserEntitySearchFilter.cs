@@ -4,7 +4,7 @@ using FGS.Common.SearchFilter;
 
 namespace FGS.Auth.Services;
 
-public class UserEntitySearchFilter : BaseSearchFilter<FgsUser>
+public class FgsUserEntitySearchFilter : BaseSearchFilter<FgsUser>
 {
     public override Expression<Func<FgsUser, bool>> GetWhereExpression()
     {

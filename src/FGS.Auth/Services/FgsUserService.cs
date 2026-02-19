@@ -5,9 +5,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FGS.Auth.Services;
 
-public class UserService(AuthContext db)
+public class FgsUserService(AuthContext db)
 {
-    public async Task<IReadOnlyCollection<UserEntity>> GetUsersAsync(UserEntitySearchFilter filter,
+    public async Task<IReadOnlyCollection<UserEntity>> GetUsersAsync(FgsUserEntitySearchFilter filter,
         CancellationToken cancellationToken)
     {
         return await db.Users
