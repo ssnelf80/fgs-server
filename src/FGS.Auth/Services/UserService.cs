@@ -10,27 +10,8 @@ public class UserService(AuthContext db)
     public async Task<IReadOnlyCollection<UserEntity>> GetUsersAsync(UserEntitySearchFilter filter,
         CancellationToken cancellationToken)
     {
-        // todo в метод фильтра или в страшную рефлексию
-        PredicateBuilder<FgsUser> predicate = new();
-        if (!string.IsNullOrWhiteSpace(filter.SearchString))
-        {
-            predicate.Or(x => x.Id == filter.SearchString);
-            if (filter.IgnoreCase)
-            {
-                predicate.Or(x 
-                    => x.UserName != null && x.UserName.ToLower().Contains(filter.GetLowercaseSearchString()));
-                predicate.Or(x 
-                    => x.DisplayName.Contains(filter.GetLowercaseSearchString()));
-            }
-            else
-            {
-                predicate.Or(x => x.UserName != null && x.UserName.Contains(filter.SearchString));
-                predicate.Or(x => x.DisplayName.Contains(filter.SearchString));
-            }
-        }
-
         return await db.Users
-            .Where(predicate.GetLambda())
+            .Where(filter.GetWhereExpression())
             .Select(user => new UserEntity(
                     Guid.Parse(user.Id), 
                     user.UserName ?? string.Empty,

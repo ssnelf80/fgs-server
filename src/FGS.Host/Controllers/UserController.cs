@@ -34,7 +34,7 @@ public class UserController(SignInManager<FgsUser> signInManager, UserService us
         {
             Offset = offset ?? 0,
             Limit = limit ?? 20,
-            IgnoreCase = ingnoreCase ?? false,
+            IgnoreCase = ingnoreCase ?? true,
             SearchString = searchString ?? string.Empty,
         }, cancellationToken);
     }

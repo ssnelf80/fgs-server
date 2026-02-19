@@ -42,7 +42,7 @@ public class PredicateBuilder<TEntity>
         return this;
     }
 
-    public Expression<Func<TEntity, bool>> GetLambda(bool @default = true) => _lambda ??
+    public Expression<Func<TEntity, bool>> GetExpression(bool @default = true) => _lambda ??
                                                                               Expression.Lambda<Func<TEntity, bool>>(
                                                                                   Expression.Constant(@default),
                                                                                   Expression.Parameter(
