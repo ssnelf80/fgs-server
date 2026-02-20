@@ -2,6 +2,14 @@
 
 public record LobbySettings
 {
+    public static LobbySettings Default() => new()
+    {
+        PlayersCount = 4,
+        TraitorsCount = 1,
+        StartBalance = 100_000,
+        RandomizerSeed = Environment.TickCount,
+    };
+
     public required uint PlayersCount { get; init; }
     public required uint TraitorsCount { get; init; }
     public required long StartBalance { get; init; }

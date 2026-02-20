@@ -1,11 +1,8 @@
-﻿using FGS.Domain.Base;
+﻿namespace FGS.Domain.FgsLobby.Exceptions;
 
-namespace FGS.Domain.FgsLobby.Exceptions;
-
-public class LobbyGameManagerException : DomainException
+public class LobbyGameManagerException : LobbyException
 {
     public LobbyGameManagerException(string message) : base(message)
     {
     }
 }
-

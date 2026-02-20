@@ -2,14 +2,16 @@
 using FGS.Domain.FgsLobby.Entities;
 using FGS.Domain.FgsLobby.Enums;
 using FGS.Domain.FgsLobby.Events;
+using FGS.Domain.FgsLobby.Exceptions;
 using FGS.Domain.FgsLobby.Services;
+using LobbyGameManager = FGS.Domain.FgsLobby.Services.GameManager.LobbyGameManager;
 
 namespace FGS.Domain.FgsLobby.Aggregate;
 
 public sealed partial class Lobby : AggregateRoot<LobbyEvent>
 {
     private LobbyGameManager? _lobbyGameManager;
-    private LobbyGameManager LobbyGameManager => _lobbyGameManager ?? throw new DomainException("LobbyGameManager is not initialized");
+    private LobbyGameManager LobbyGameManager => _lobbyGameManager ?? throw new LobbyException("LobbyGameManager is not initialized");
     private readonly InnerLobbyManagerVisitor _innerLobbyManagerVisitor;
     public LobbyStatus Status { get; private set; }
     

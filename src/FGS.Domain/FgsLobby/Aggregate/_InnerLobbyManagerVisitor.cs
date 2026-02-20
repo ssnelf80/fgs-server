@@ -1,5 +1,6 @@
 ﻿using FGS.Domain.FgsLobby.Events;
 using FGS.Domain.FgsLobby.Services;
+using LobbyGameManager = FGS.Domain.FgsLobby.Services.GameManager.LobbyGameManager;
 
 namespace FGS.Domain.FgsLobby.Aggregate;
 

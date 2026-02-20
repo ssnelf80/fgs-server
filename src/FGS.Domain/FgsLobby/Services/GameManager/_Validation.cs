@@ -1,7 +1,7 @@
 ﻿using FGS.Domain.FgsLobby.Entities;
 using FGS.Domain.FgsLobby.Exceptions;
 
-namespace FGS.Domain.FgsLobby.Services;
+namespace FGS.Domain.FgsLobby.Services.GameManager;
 
 public partial class LobbyGameManager
 {
