@@ -1,6 +1,6 @@
 namespace FGS.Domain.FgsLobby.Events;
 
-public record PlayerDisconnectedLobbyEvent(Guid Id,Guid UserId) : LobbyEvent(Id)
+public record PlayerDisconnectedLobbyEvent(Guid LobbyId,Guid UserId) : LobbyEvent(LobbyId)
 {
-    public override T Accept<T>(ILobbyEventVisitor<T> visitor) => visitor.Visit(this);
+    public override T Accept<T>(ILobbyEventVisitor<T> visitor, CancellationToken ct) => visitor.Visit(this, ct);
 }

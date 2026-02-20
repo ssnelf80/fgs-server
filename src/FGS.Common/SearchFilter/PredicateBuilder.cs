@@ -5,13 +5,14 @@ namespace FGS.Common.SearchFilter;
 public class PredicateBuilder<TEntity>
 {
     private Expression<Func<TEntity, bool>>? _lambda;
-    
+
     private class ReplaceVisitor(Expression from, Expression to) : ExpressionVisitor
     {
         public static Expression Replace(Expression expression,
             Expression searchEx, Expression replaceEx) => new ReplaceVisitor(searchEx, replaceEx).Visit(expression);
 
-        public override Expression Visit(Expression? node) => (node == from ? to : base.Visit(node)) ?? throw new InvalidOperationException();
+        public override Expression Visit(Expression? node) =>
+            (node == from ? to : base.Visit(node)) ?? throw new InvalidOperationException();
     }
 
     public PredicateBuilder<TEntity> And(Expression<Func<TEntity, bool>> lambda)
@@ -42,11 +43,10 @@ public class PredicateBuilder<TEntity>
         return this;
     }
 
-    public Expression<Func<TEntity, bool>> GetExpression(bool @default = true) => _lambda ??
-                                                                              Expression.Lambda<Func<TEntity, bool>>(
-                                                                                  Expression.Constant(@default),
-                                                                                  Expression.Parameter(
-                                                                                      typeof(TEntity)));
-    
+    public Expression<Func<TEntity, bool>> GetExpression(bool @default = true)
+        => _lambda ??
+           Expression.Lambda<Func<TEntity, bool>>(
+               Expression.Constant(@default),
+               Expression.Parameter(
+                   typeof(TEntity)));
 }
-

@@ -3,8 +3,10 @@
     <File Path=".gitignore" />
     <File Path="Directory.Packages.props" />
   </Folder>
+  <Project Path="src/FGS.App/FGS.App.csproj" />
   <Project Path="src/FGS.Auth/FGS.Auth.csproj" />
   <Project Path="src/FGS.Common/FGS.Common.csproj" />
+  <Project Path="src/FGS.DAL/FGS.DAL.csproj" />
   <Project Path="src/FGS.Domain/FGS.Domain.csproj" />
   <Project Path="src/FGS.Host/FGS.Host.csproj" />
 </Solution>

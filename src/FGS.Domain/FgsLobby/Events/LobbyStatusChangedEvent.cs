@@ -3,9 +3,9 @@ using FGS.Domain.FgsLobby.Enums;
 namespace FGS.Domain.FgsLobby.Events;
 
 public record LobbyStatusChangedEvent(
-    Guid Id,
+    Guid LobbyId,
     LobbyStatus Status
-) : LobbyEvent(Id)
+) : LobbyEvent(LobbyId)
 {
-    public override T Accept<T>(ILobbyEventVisitor<T> visitor) => visitor.Visit(this);
+    public override T Accept<T>(ILobbyEventVisitor<T> visitor, CancellationToken ct) => visitor.Visit(this, ct);
 }
