@@ -22,6 +22,8 @@ public sealed partial class Lobby : AggregateRoot<LobbyEvent>
     public void ConnectUser(Guid userId)
     {
         EmitEvent(new PlayerConnectedLobbyEvent(Id, userId));
+        if (LobbyGameManager.LobbyGameState != LobbyGameState.WaitPlayers)
+            EmitEvent(new LobbyStatusChangedEvent(Id, LobbyStatus.InProgress));
     }
 
     protected override void ApplyChanges(LobbyEvent e) => e.Accept(_innerLobbyManagerVisitor);

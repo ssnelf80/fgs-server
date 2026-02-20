@@ -2,4 +2,4 @@
 
 namespace FGS.Domain.FgsLobby.Entities;
 
-public record Player(Guid UserId, int Number, long Balance, PlayerRole Role, bool IsBot);
+public record Player(Guid UserId, long Balance, PlayerRole Role, bool IsBot);

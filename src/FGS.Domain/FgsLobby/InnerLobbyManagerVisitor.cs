@@ -24,10 +24,7 @@ public partial class Lobby
         {
             lobby.LobbyGameManager.AddPlayer(e.UserId);
             if (lobby.LobbyGameManager.ReadyToStartInitialize())
-            {
                 lobby.LobbyGameManager.InitializeStartState();
-                lobby.EmitEvent(new LobbyStatusChangedEvent(lobby.Id, LobbyStatus.InProgress));
-            }
             
             return true;
         }

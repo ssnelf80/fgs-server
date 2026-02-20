@@ -11,8 +11,8 @@ public class LobbyGameManager
     public Random Random { get; }
     
     private Dictionary<Guid, Player> _playersMap = [];
-    public IReadOnlyList<Player> Players  => _playersMap.Values.ToList().AsReadOnly();
-    public IReadOnlyList<Player> InnocentPlayers => _playersMap.Values.Where(x=> x.Role == PlayerRole.Innocent).ToList().AsReadOnly();
+    public IReadOnlyList<Player> Players()  => _playersMap.Values.OrderBy(x=> x.UserId).ToList().AsReadOnly();
+    public IReadOnlyList<Player> InnocentPlayers() => _playersMap.Values.Where(x=> x.Role == PlayerRole.Innocent).OrderBy(x=> x.UserId).ToList().AsReadOnly();
 
     public LobbyGameManager(LobbySettings settings)
     {
@@ -32,7 +32,7 @@ public class LobbyGameManager
         if (_playersMap.ContainsKey(userId))
             throw new LobbyGameManagerException($"Игрок с ID : {userId} уже существует");
 
-        _playersMap.Add(userId, new Player(userId, _playersMap.Count + 1, LobbySettings.StartBalance, PlayerRole.Unknown, false));
+        _playersMap.Add(userId, new Player(userId, LobbySettings.StartBalance, PlayerRole.Unknown, false));
     }
     public void RemovePlayer(Guid userId)
     {
@@ -64,7 +64,7 @@ public class LobbyGameManager
 
         for (var i = 0; i < LobbySettings.TraitorsCount; i++)
         {
-            var rndPlayerId = GetRandomPlayerUserId(InnocentPlayers);
+            var rndPlayerId = GetRandomPlayerUserId(InnocentPlayers());
             _playersMap[rndPlayerId] = _playersMap[rndPlayerId] with { Role = PlayerRole.Traitor };
         }
     }
