@@ -3,7 +3,7 @@ using FGS.Domain.FgsLobby.Enums;
 using FGS.Domain.FgsLobby.Events;
 using FGS.Domain.FgsLobby.Services;
 
-namespace FGS.Domain.FgsLobby;
+namespace FGS.Domain.FgsLobby.Aggregate;
 
 public sealed partial class Lobby : AggregateRoot<LobbyEvent>
 {
