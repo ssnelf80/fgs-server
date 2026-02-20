@@ -1,4 +1,5 @@
 ﻿using FGS.Domain.Base;
+using FGS.Domain.FgsLobby.Entities;
 using FGS.Domain.FgsLobby.Enums;
 using FGS.Domain.FgsLobby.Events;
 using FGS.Domain.FgsLobby.Services;
@@ -18,6 +19,15 @@ public sealed partial class Lobby : AggregateRoot<LobbyEvent>
         foreach (var e in commitedEvents)
             ApplyChanges(e);
     }
+
+    public static Lobby Create(Guid masterUserId, string name, LobbySettings lobbySettings)
+    {
+        var lobby = new Lobby(Guid.NewGuid(), 0, []);
+        lobby.EmitEvent(new LobbyCreatedEvent(lobby.Id, name, masterUserId, lobbySettings, DateTimeOffset.UtcNow));
+        return lobby;
+    }
+    
+    public void DisconnectUser(Guid userId) => EmitEvent(new PlayerDisconnectedLobbyEvent(Id, userId));
 
     public void ConnectUser(Guid userId)
     {
