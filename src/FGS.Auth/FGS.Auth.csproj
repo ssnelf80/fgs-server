@@ -19,7 +19,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\FGS.Common\FGS.Common.csproj" />
+      <ProjectReference Include="..\FGS.Adapters\FGS.Adapters.csproj" />
     </ItemGroup>
 
 </Project>

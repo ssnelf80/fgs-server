@@ -36,6 +36,7 @@ public sealed partial class Lobby : AggregateRoot<LobbyEvent>
         EmitEvent(new PlayerConnectedLobbyEvent(Id, userId));
         if (Context.Status == LobbyGameStateEnum.ReadyToInitialize)
         {
+            // todo валидацию соединений пользователя
             Context.SendRequest(new InitializeGameRequest());
             EmitEvent(new LobbyStatusChangedEvent(Id, LobbyStatus.InProgress));
         }

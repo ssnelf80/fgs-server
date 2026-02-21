@@ -1,6 +1,6 @@
 ﻿using System.Linq.Expressions;
 
-namespace FGS.Common.SearchFilter;
+namespace FGS.Adapters;
 
 public class PredicateBuilder<TEntity>
 {

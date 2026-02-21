@@ -5,7 +5,6 @@ namespace FGS.Domain.FgsLobby.Aggregate;
 
 public sealed partial class Lobby
 {
-    // todo подумать над отказом
     private sealed class InnerLobbyManagerVisitor(Lobby lobby) : ILobbyEventVisitor<bool>
     {
         public bool Visit(LobbyCreatedEvent e, CancellationToken ct = default)

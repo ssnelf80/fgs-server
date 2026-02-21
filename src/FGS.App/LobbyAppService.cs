@@ -10,6 +10,7 @@ public class LobbyAppService(IAggregateRepository<Lobby, LobbyEvent> lobbyReposi
 {
     public async Task CreateLobbyAsync(CreateLobbyRequest request, CancellationToken ct)
     {
+        // todo оплетку над стандартными исключениями eventStore и аггрегатов
         var lobby = Lobby.Create(request.UserId, request.Name, LobbySettings.Default);
         await lobbyRepository.SaveAsync(lobby, ct);
     }

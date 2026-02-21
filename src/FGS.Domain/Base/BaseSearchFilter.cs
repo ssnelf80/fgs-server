@@ -1,8 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.Linq.Expressions;
-using System.Reflection;
 
-namespace FGS.Common.SearchFilter;
+namespace FGS.Domain.Base;
 
 public abstract class BaseSearchFilter<T>
 {

@@ -40,6 +40,9 @@ builder.Services.AddScoped<IAggregateRepository<Lobby, LobbyEvent>, LobbyReposit
 builder.Services.AddScoped<LobbyAppService>();
 builder.Services.AddSingleton<ILobbyEventJsonConvert, LobbyEventJsonConvert>();
 
+// view model
+builder.AddViewModelContext();
+
 //swagger
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -54,8 +57,9 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-
-await app.Services.AuthConfigureAsync();
+await Task.WhenAll(
+    app.Services.AuthConfigureAsync(),
+    app.Services.ViewModelConfigureAsync());
 
 if (app.Environment.IsDevelopment())
 {

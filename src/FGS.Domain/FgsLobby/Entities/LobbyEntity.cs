@@ -9,5 +9,6 @@ public record LobbyEntity(
     LobbyStatus Status,
     uint PlayersCount,
     IReadOnlyCollection<Guid> ConnectedUsers,
-    DateTimeOffset CreatedAt
+    DateTimeOffset CreatedAt,
+    DateTimeOffset UpdatedAt
 );

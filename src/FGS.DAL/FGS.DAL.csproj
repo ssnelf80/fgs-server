@@ -12,6 +12,12 @@
 
     <ItemGroup>
       <PackageReference Include="EventStore.Client.Grpc.Streams" />
+      <PackageReference Include="Microsoft.EntityFrameworkCore" />
+      <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="LobbyViewModelRepository\Migrations\" />
     </ItemGroup>
 
 </Project>

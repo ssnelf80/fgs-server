@@ -1,5 +1,6 @@
 ﻿using FGS.Auth.Entities;
 using FGS.Auth.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
@@ -30,7 +31,8 @@ public class AuthController(SignInManager<FgsUser> signInManager) : ControllerBa
             HttpContext.Response.StatusCode = 401;
     }
     
-    [HttpGet]
+    [HttpPost]
+    [Authorize]
     [Route("logout")]
     public async Task LogoutAsync(CancellationToken cancellationToken)
     {

@@ -1,6 +1,5 @@
 ﻿using FGS.Auth.Entities;
 using FGS.Auth.Enums;
-using FGS.Common.SearchFilter;
 using Microsoft.EntityFrameworkCore;
 
 namespace FGS.Auth.Services;

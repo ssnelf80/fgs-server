@@ -1,6 +1,7 @@
 ﻿using System.Linq.Expressions;
+using FGS.Adapters;
 using FGS.Auth.Entities;
-using FGS.Common.SearchFilter;
+using FGS.Domain.Base;
 
 namespace FGS.Auth.Services;
 
