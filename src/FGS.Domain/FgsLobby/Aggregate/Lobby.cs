@@ -1,4 +1,5 @@
 ﻿using FGS.Domain.Base;
+using FGS.Domain.FgsLobby.Context.Requests;
 using FGS.Domain.FgsLobby.Entities;
 using FGS.Domain.FgsLobby.Enums;
 using FGS.Domain.FgsLobby.Events;
@@ -8,7 +9,7 @@ using FGS.Domain.FgsLobby.Services.FgsLobbyState;
 
 namespace FGS.Domain.FgsLobby.Aggregate;
 
-public sealed class Lobby : AggregateRoot<LobbyEvent>
+public sealed partial class Lobby : AggregateRoot<LobbyEvent>
 {
     private LobbyStateContext _context;
     private  LobbyStateContext Context => _context ?? throw new LobbyException("LobbyContext is not initialized");
@@ -41,7 +42,7 @@ public sealed class Lobby : AggregateRoot<LobbyEvent>
         }
     }
 
-    public void InitContext(LobbySettings settings)
+    private void InitContext(LobbySettings settings)
     {
         if (_context is not null)
             throw new LobbyException("LobbyContext already initialized");
@@ -49,35 +50,9 @@ public sealed class Lobby : AggregateRoot<LobbyEvent>
     }
 
     protected override void ApplyChanges(LobbyEvent e) => e.Accept(_innerLobbyManagerVisitor);
-
-    // todo подумать над отказом
-    private sealed class InnerLobbyManagerVisitor(Lobby lobby) : ILobbyEventVisitor<bool>
-    {
-        public bool Visit(LobbyCreatedEvent e, CancellationToken ct = default)
-        {
-            lobby.InitContext(e.LobbySettings);
-            return true;
-        }
-
-        public bool Visit(LobbyStatusChangedEvent e, CancellationToken ct = default)
-        {
-            lobby.Status = e.Status;
-            return true;
-        }
-
-        public bool Visit(PlayerConnectedLobbyEvent e, CancellationToken ct = default)
-        {
-            lobby.Context.SendRequest(new AddPlayerRequest(e.UserId));
-            return true;
-        }
-
-        public bool Visit(PlayerDisconnectedLobbyEvent e, CancellationToken ct = default)
-        {
-            lobby.Context.SendRequest(new RemovePlayerRequest(e.UserId));
-            return true;
-        }
-    }
 }
+
+
 
 
 
