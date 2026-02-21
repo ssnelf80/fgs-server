@@ -21,12 +21,16 @@ public class LobbyRepository(
 
     public async Task SaveAsync(Lobby aggregate, CancellationToken cancellationToken)
     {
-         var streamName = GetStreamName(aggregate.Id);
-         await eventStoreClient.AppendToStreamAsync(
-             streamName,
-             aggregate.Version,
-             GetEventDataList(aggregate),
-             cancellationToken: cancellationToken);
+        if (aggregate.Events.Count == 0)
+            return;
+        
+        var streamName = GetStreamName(aggregate.Id);
+        await eventStoreClient.AppendToStreamAsync(
+            streamName,
+            aggregate.Version,
+            GetEventDataList(aggregate),
+            cancellationToken: cancellationToken);
+        aggregate.CommitEvents();
     }
 
     public IEnumerable<EventData> GetEventDataList(Lobby aggregate)
