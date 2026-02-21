@@ -13,7 +13,11 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\FGS.Adapters\FGS.Adapters.csproj" />
+      <ProjectReference Include="..\FGS.App\FGS.App.csproj" />
       <ProjectReference Include="..\FGS.Auth\FGS.Auth.csproj" />
+      <ProjectReference Include="..\FGS.DAL\FGS.DAL.csproj" />
+      <ProjectReference Include="..\FGS.Domain\FGS.Domain.csproj" />
     </ItemGroup>
 
 </Project>

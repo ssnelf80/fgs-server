@@ -2,7 +2,7 @@
 
 public record LobbySettings
 {
-    public static LobbySettings Default() => new()
+    public static LobbySettings Default => new()
     {
         PlayersCount = 4,
         TraitorsCount = 1,

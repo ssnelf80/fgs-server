@@ -1,5 +1,12 @@
 using System.Text.Json.Serialization;
 using EventStore.Client;
+using FGS.Adapters.JsonConvert.Lobby;
+using FGS.App;
+using FGS.DAL;
+using FGS.Domain.Base;
+using FGS.Domain.FgsLobby.Aggregate;
+using FGS.Domain.FgsLobby.Events;
+using FGS.Domain.Services;
 using FGS.Host.Extensions;
 using Microsoft.AspNetCore.Authentication.Cookies;
 
@@ -25,8 +32,13 @@ builder.Services.AddControllers().AddJsonOptions(options =>
 
 // event store db
 
-var settings = EventStoreClientSettings.Create(builder.Configuration.GetConnectionString("EventStoreConnection"));
+var settings = EventStoreClientSettings.Create(builder.Configuration.GetConnectionString("EventStoreConnection")!);
 builder.Services.AddSingleton(new EventStoreClient(settings));
+builder.Services.AddScoped<IAggregateRepository<Lobby, LobbyEvent>, LobbyRepository>();
+
+// app
+builder.Services.AddScoped<LobbyAppService>();
+builder.Services.AddSingleton<ILobbyEventJsonConvert, LobbyEventJsonConvert>();
 
 //swagger
 builder.Services.AddEndpointsApiExplorer();
