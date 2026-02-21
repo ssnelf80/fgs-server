@@ -14,9 +14,10 @@ public class LobbyRepository(EventStoreClient eventStoreClient) : IAggregateRepo
 
     public Task SaveAsync(Lobby aggregate, CancellationToken cancellationToken)
     {
+        throw new NotImplementedException();
          //aggregate.Events
-         var streamName = aggregate.Id.ToString();
-         eventStoreClient.AppendToStreamAsync(streamName, aggregate.Version,)
+         //var streamName = aggregate.Id.ToString();
+         //eventStoreClient.AppendToStreamAsync(streamName, aggregate.Version,)
         
     }
 }

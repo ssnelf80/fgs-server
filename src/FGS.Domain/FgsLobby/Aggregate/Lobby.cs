@@ -3,15 +3,15 @@ using FGS.Domain.FgsLobby.Entities;
 using FGS.Domain.FgsLobby.Enums;
 using FGS.Domain.FgsLobby.Events;
 using FGS.Domain.FgsLobby.Exceptions;
-using FGS.Domain.FgsLobby.Services;
-using LobbyGameManager = FGS.Domain.FgsLobby.Services.GameManager.LobbyGameManager;
+using FGS.Domain.FgsLobby.Services.FgsLobbyState;
+
 
 namespace FGS.Domain.FgsLobby.Aggregate;
 
-public sealed partial class Lobby : AggregateRoot<LobbyEvent>
+public sealed class Lobby : AggregateRoot<LobbyEvent>
 {
-    private LobbyGameManager? _lobbyGameManager;
-    private LobbyGameManager LobbyGameManager => _lobbyGameManager ?? throw new LobbyException("LobbyGameManager is not initialized");
+    private LobbyStateContext _context;
+    private  LobbyStateContext Context => _context ?? throw new LobbyException("LobbyContext is not initialized");
     private readonly InnerLobbyManagerVisitor _innerLobbyManagerVisitor;
     public LobbyStatus Status { get; private set; }
     
@@ -34,11 +34,49 @@ public sealed partial class Lobby : AggregateRoot<LobbyEvent>
     public void ConnectUser(Guid userId)
     {
         EmitEvent(new PlayerConnectedLobbyEvent(Id, userId));
-        if (LobbyGameManager.LobbyGameState != LobbyGameStateEnum.WaitPlayers)
+        if (Context.Status == LobbyGameStateEnum.ReadyToInitialize)
+        {
+            Context.SendRequest(new InitializeGameRequest());
             EmitEvent(new LobbyStatusChangedEvent(Id, LobbyStatus.InProgress));
+        }
+    }
+
+    public void InitContext(LobbySettings settings)
+    {
+        if (_context is not null)
+            throw new LobbyException("LobbyContext already initialized");
+        _context = LobbyStateContext.Create(settings);
     }
 
     protected override void ApplyChanges(LobbyEvent e) => e.Accept(_innerLobbyManagerVisitor);
+
+    // todo подумать над отказом
+    private sealed class InnerLobbyManagerVisitor(Lobby lobby) : ILobbyEventVisitor<bool>
+    {
+        public bool Visit(LobbyCreatedEvent e, CancellationToken ct = default)
+        {
+            lobby.InitContext(e.LobbySettings);
+            return true;
+        }
+
+        public bool Visit(LobbyStatusChangedEvent e, CancellationToken ct = default)
+        {
+            lobby.Status = e.Status;
+            return true;
+        }
+
+        public bool Visit(PlayerConnectedLobbyEvent e, CancellationToken ct = default)
+        {
+            lobby.Context.SendRequest(new AddPlayerRequest(e.UserId));
+            return true;
+        }
+
+        public bool Visit(PlayerDisconnectedLobbyEvent e, CancellationToken ct = default)
+        {
+            lobby.Context.SendRequest(new RemovePlayerRequest(e.UserId));
+            return true;
+        }
+    }
 }
 
 

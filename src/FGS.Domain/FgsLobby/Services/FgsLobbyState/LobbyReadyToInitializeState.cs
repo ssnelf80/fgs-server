@@ -23,6 +23,7 @@ public class LobbyReadyToInitializeState(AbstractLobbyState other) : AbstractLob
     
     private void InitPlayerRoles()
     {
+        // todo закрыть нафиг мапу
         foreach (var uid in PlayersMap.Keys)
             PlayersMap[uid] = PlayersMap[uid] with { Role = PlayerRole.Innocent };
 
