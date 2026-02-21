@@ -8,7 +8,7 @@ public partial class LobbyGameManager
 {
     public void AddPlayer(Guid userId)
     {
-        if (LobbyGameState != LobbyGameState.WaitPlayers)
+        if (LobbyGameState != LobbyGameStateEnum.WaitPlayers)
             throw new LobbyGameManagerException($"Нельзя добавить игроков. LobbyGameState = {LobbyGameState}");
         
         if (_playersMap.ContainsKey(userId))
@@ -18,7 +18,7 @@ public partial class LobbyGameManager
     }
     public void RemovePlayer(Guid userId)
     {
-        if (LobbyGameState != LobbyGameState.WaitPlayers)
+        if (LobbyGameState != LobbyGameStateEnum.WaitPlayers)
             throw new LobbyGameManagerException($"Нельзя исключить игроков. LobbyGameState = {LobbyGameState}");
         
         if (!_playersMap.Remove(userId))

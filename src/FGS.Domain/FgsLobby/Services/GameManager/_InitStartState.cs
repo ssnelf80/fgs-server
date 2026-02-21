@@ -6,14 +6,14 @@ namespace FGS.Domain.FgsLobby.Services.GameManager;
 public partial class LobbyGameManager
 {
     public bool ReadyToStartInitialize() =>
-        LobbyGameState == LobbyGameState.WaitPlayers && _playersMap.Count == _lobbySettings.PlayersCount;
+        LobbyGameState == LobbyGameStateEnum.WaitPlayers && _playersMap.Count == _lobbySettings.PlayersCount;
     
     public void InitializeStartState()
     {
         if (!ReadyToStartInitialize())
             throw new LobbyGameManagerException($"Нельзя инициализировать игру. LobbyGameState = {LobbyGameState}, PlayersCount = {_playersMap.Count} {_lobbySettings.PlayersCount}");
 
-        LobbyGameState = LobbyGameState.Initialize;
+        LobbyGameState = LobbyGameStateEnum.ReadyToInitialize;
         
         InitPlayerRoles();
         InitStartBalance();

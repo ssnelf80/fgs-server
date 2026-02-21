@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using EventStore.Client;
 using FGS.Host.Extensions;
 using Microsoft.AspNetCore.Authentication.Cookies;
 
@@ -20,7 +21,12 @@ builder.Services.AddControllers().AddJsonOptions(options =>
 {
     options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
     options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
-});;
+});
+
+// event store db
+
+var settings = EventStoreClientSettings.Create(builder.Configuration.GetConnectionString("EventStoreConnection"));
+builder.Services.AddSingleton(new EventStoreClient(settings));
 
 //swagger
 builder.Services.AddEndpointsApiExplorer();

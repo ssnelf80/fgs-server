@@ -5,10 +5,11 @@ public abstract class AggregateRoot<TDomainEvent>
 {
     private readonly List<TDomainEvent> _uncommittedEvents = [];
     public Guid Id { get; }
-    public long Version { get; private set; }
+    public ulong Version { get;}
     public IReadOnlyList<TDomainEvent> Events => _uncommittedEvents.AsReadOnly();
+    protected const ulong NoVersion = ulong.MaxValue;
 
-    protected AggregateRoot(Guid id, long version)
+    protected AggregateRoot(Guid id, ulong version)
     {
         Id = id;
         Version = version;
@@ -16,7 +17,6 @@ public abstract class AggregateRoot<TDomainEvent>
     
     public void CommitEvents()
     {
-        Version += _uncommittedEvents.Count; // todo проверить, что не будет косячить с eventStore
         _uncommittedEvents.Clear();
     }
     

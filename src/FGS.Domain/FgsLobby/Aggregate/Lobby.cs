@@ -15,7 +15,7 @@ public sealed partial class Lobby : AggregateRoot<LobbyEvent>
     private readonly InnerLobbyManagerVisitor _innerLobbyManagerVisitor;
     public LobbyStatus Status { get; private set; }
     
-    private Lobby(Guid id, long version, IReadOnlyCollection<LobbyEvent> commitedEvents) : base(id, version)
+    private Lobby(Guid id, ulong version, IReadOnlyCollection<LobbyEvent> commitedEvents) : base(id, version)
     {
         _innerLobbyManagerVisitor = new InnerLobbyManagerVisitor(this);
         foreach (var e in commitedEvents)
@@ -24,7 +24,7 @@ public sealed partial class Lobby : AggregateRoot<LobbyEvent>
 
     public static Lobby Create(Guid masterUserId, string name, LobbySettings lobbySettings)
     {
-        var lobby = new Lobby(Guid.NewGuid(), 0, []);
+        var lobby = new Lobby(Guid.NewGuid(), NoVersion, []);
         lobby.EmitEvent(new LobbyCreatedEvent(lobby.Id, name, masterUserId, lobbySettings, DateTimeOffset.UtcNow));
         return lobby;
     }
@@ -34,7 +34,7 @@ public sealed partial class Lobby : AggregateRoot<LobbyEvent>
     public void ConnectUser(Guid userId)
     {
         EmitEvent(new PlayerConnectedLobbyEvent(Id, userId));
-        if (LobbyGameManager.LobbyGameState != LobbyGameState.WaitPlayers)
+        if (LobbyGameManager.LobbyGameState != LobbyGameStateEnum.WaitPlayers)
             EmitEvent(new LobbyStatusChangedEvent(Id, LobbyStatus.InProgress));
     }
 

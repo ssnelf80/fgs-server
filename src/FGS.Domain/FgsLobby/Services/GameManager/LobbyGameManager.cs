@@ -6,7 +6,7 @@ namespace FGS.Domain.FgsLobby.Services.GameManager;
 public partial class LobbyGameManager
 {
     private readonly LobbySettings _lobbySettings;
-    public LobbyGameState LobbyGameState { get; private set; }
+    public LobbyGameStateEnum LobbyGameState { get; private set; }
     private Random Random { get; }
     
     private readonly Dictionary<Guid, Player> _playersMap = [];
@@ -20,7 +20,7 @@ public partial class LobbyGameManager
     {
         ValidateLobbySettingsOrThrow(settings);
         _lobbySettings = settings;
-        LobbyGameState = LobbyGameState.WaitPlayers;
+        LobbyGameState = LobbyGameStateEnum.WaitPlayers;
         Random = new Random(settings.RandomizerSeed);
     }
 }
