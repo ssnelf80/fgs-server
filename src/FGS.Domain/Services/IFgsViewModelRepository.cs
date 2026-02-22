@@ -3,7 +3,7 @@ using FGS.Domain.FgsLobby.Events;
 
 namespace FGS.Domain.Services;
 
-public interface IFgsViewModelRepository : ILobbyEventVisitor<Task>
+public interface IFgsViewModelRepository : ILobbyEventVisitor<Task<bool>>
 {
     Task<IReadOnlyCollection<LobbyEntity>> GetLobbyEntitiesListAsync(
         LobbyEntitySearchFilter searchFilter, CancellationToken cancellationToken);

@@ -49,12 +49,12 @@ public class FgsViewModelRepository(
                     .SetProperty(p => p.CommitPosition, commitPosition), cancellationToken);
     }
 
-    public async Task Visit(LobbyCreatedEvent e, CancellationToken ct = default)
+    public async Task<bool> Visit(LobbyCreatedEvent e, CancellationToken ct = default)
     {
         if (db.Lobbies.Any(x => x.Id == e.LobbyId))
         {
             logger.LogWarning($"Lobby with id {e.LobbyId} has already been created");
-            return;
+            return false;
         }
         await db.Lobbies.AddAsync(new LobbyEntity(
             e.LobbyId,
@@ -67,28 +67,50 @@ public class FgsViewModelRepository(
             DateTimeOffset.UtcNow
         ), ct);
         await db.SaveChangesAsync(ct);
+        
+        return true;
     }
 
-    public async Task Visit(LobbyStatusChangedEvent e, CancellationToken ct = default)
+    public async Task<bool> Visit(LobbyStatusChangedEvent e, CancellationToken ct = default)
     {
-        var lobby = await db.Lobbies.FirstAsync(x => x.Id == e.LobbyId, cancellationToken: ct);
+        var lobby = await db.Lobbies.FirstOrDefaultAsync(x => x.Id == e.LobbyId, cancellationToken: ct);
+        if (lobby == null)
+        {
+            logger.LogWarning($"Lobby with id {e.LobbyId} has not been created");
+            return false;
+        }
         db.Lobbies.Update(lobby with { Status = e.Status });
         await db.SaveChangesAsync(ct);
+        return true;
     }
 
-    public async Task Visit(PlayerConnectedLobbyEvent e, CancellationToken ct = default)
+    public async Task<bool> Visit(PlayerConnectedLobbyEvent e, CancellationToken ct = default)
     {
-        var lobby = await db.Lobbies.FirstAsync(x => x.Id == e.LobbyId, cancellationToken: ct);
+        var lobby = await db.Lobbies.FirstOrDefaultAsync(x => x.Id == e.LobbyId, cancellationToken: ct);
+        if (lobby == null)
+        {
+            logger.LogWarning($"Lobby with id {e.LobbyId} has not been created");
+            return false;
+        }
+        
         var newUserList = lobby.ConnectedUsers.Concat([e.UserId]).ToList();
         db.Lobbies.Update(lobby with { ConnectedUsers = newUserList});
         await db.SaveChangesAsync(ct);
+        return true;
     }
 
-    public async Task Visit(PlayerDisconnectedLobbyEvent e, CancellationToken ct = default)
+    public async Task<bool> Visit(PlayerDisconnectedLobbyEvent e, CancellationToken ct = default)
     {
-        var lobby = await db.Lobbies.FirstAsync(x => x.Id == e.LobbyId, cancellationToken: ct);
+        var lobby = await db.Lobbies.FirstOrDefaultAsync(x => x.Id == e.LobbyId, cancellationToken: ct);
+        if (lobby == null)
+        {
+            logger.LogWarning($"Lobby with id {e.LobbyId} has not been created");
+            return false;
+        }
+        
         var newUserList = lobby.ConnectedUsers.Where(x => x != e.UserId).ToList();
         db.Lobbies.Update(lobby with { ConnectedUsers = newUserList});
         await db.SaveChangesAsync(ct);
+        return true;
     }
 }

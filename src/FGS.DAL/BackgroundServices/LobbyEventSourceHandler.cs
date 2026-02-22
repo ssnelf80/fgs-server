@@ -13,65 +13,75 @@ public class EventStoreBackgroundService(
     EventStoreClient eventStoreClient,
     IServiceProvider serviceProvider,
     ILogger<EventStoreBackgroundService> logger
-    ) : BackgroundService
+) : BackgroundService
 {
     private static Position CurrentPosition = Position.Start;
+    private static CancellationToken StoppingToken = CancellationToken.None;
+
     private static SubscriptionFilterOptions FilterOptions
         => new(StreamFilter.Prefix(LobbyRepository.StreamPrefix));
-    
+
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        while (!stoppingToken.IsCancellationRequested)
+        if (stoppingToken.IsCancellationRequested)
+            return;
+        
+        StoppingToken = stoppingToken;
+
+        try
         {
-            try
+            if (CurrentPosition == Position.Start)
             {
-                if (CurrentPosition == Position.Start)
+                using (var scope = serviceProvider.CreateScope())
                 {
-                    using (var scope = serviceProvider.CreateScope())
-                    {
-                        var services = scope.ServiceProvider;  
-                        var viewModelRepository = services.GetRequiredService<IFgsViewModelRepository>();
-                        var offset = await viewModelRepository.GetCurrentLobbyStreamPositionAsync(stoppingToken);
-                    
-                        if (offset != null)
-                            CurrentPosition = new Position(offset.Value.CommitPosition, offset.Value.PreparePosition);
-                    }
+                    var services = scope.ServiceProvider;
+                    var viewModelRepository = services.GetRequiredService<IFgsViewModelRepository>();
+                    var offset = await viewModelRepository.GetCurrentLobbyStreamPositionAsync(stoppingToken);
+
+                    if (offset != null)
+                        CurrentPosition = new Position(offset.Value.CommitPosition, offset.Value.PreparePosition);
                 }
-               
-                var subscription = await eventStoreClient.SubscribeToAllAsync(
-                    FromAll.After(CurrentPosition),
-                    EventAppeared,
-                    false,
-                    subscriptionDropped: SubscriptionDropped,
-                    FilterOptions,
-                    null,
-                    stoppingToken
-                );
             }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, $"background event store listener error: {ex.Message}");
-            }
+
+            var subscription = await eventStoreClient.SubscribeToAllAsync(
+                FromAll.After(CurrentPosition),
+                EventAppeared,
+                false,
+                subscriptionDropped: SubscriptionDropped,
+                FilterOptions,
+                null,
+                stoppingToken
+            );
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, $"background event store listener error: {ex.Message}");
+            _ = ExecuteAsync(StoppingToken);
         }
     }
 
     private void SubscriptionDropped(StreamSubscription sub, SubscriptionDroppedReason reason, Exception? ex)
     {
         logger.LogError(ex, "Subscription Dropped. Reason: {reason}", reason);
+        _ = ExecuteAsync(StoppingToken);
     }
 
-    private async Task EventAppeared(StreamSubscription subscription, ResolvedEvent resolvedEvent, CancellationToken cancellationToken)
+    private async Task EventAppeared(StreamSubscription subscription, ResolvedEvent resolvedEvent,
+        CancellationToken cancellationToken)
     {
         using var scope = serviceProvider.CreateScope();
-        var services = scope.ServiceProvider;  
-        var viewModelRepository = services.GetRequiredService<IFgsViewModelRepository>();
-        
+        var viewModelRepository = scope.ServiceProvider.GetRequiredService<IFgsViewModelRepository>();
+
         LobbyEvent? lobbyEvent = resolvedEvent.Event.EventType switch
         {
-            nameof(LobbyCreatedEvent) => JsonSerializer.Deserialize<LobbyCreatedEvent>(resolvedEvent.Event.Data.Span),
-            nameof(PlayerConnectedLobbyEvent) => JsonSerializer.Deserialize<PlayerConnectedLobbyEvent>(resolvedEvent.Event.Data.Span),
-            nameof(PlayerDisconnectedLobbyEvent) => JsonSerializer.Deserialize<PlayerDisconnectedLobbyEvent>(resolvedEvent.Event.Data.Span),
-            nameof(LobbyStatusChangedEvent) => JsonSerializer.Deserialize<LobbyStatusChangedEvent>(resolvedEvent.Event.Data.Span),
+            nameof(LobbyCreatedEvent) => JsonSerializer.Deserialize<LobbyCreatedEvent>(
+                resolvedEvent.Event.Data.Span),
+            nameof(PlayerConnectedLobbyEvent) => JsonSerializer.Deserialize<PlayerConnectedLobbyEvent>(resolvedEvent
+                .Event.Data.Span),
+            nameof(PlayerDisconnectedLobbyEvent) => JsonSerializer.Deserialize<PlayerDisconnectedLobbyEvent>(
+                resolvedEvent.Event.Data.Span),
+            nameof(LobbyStatusChangedEvent) => JsonSerializer.Deserialize<LobbyStatusChangedEvent>(resolvedEvent
+                .Event.Data.Span),
             _ => null
         };
 
@@ -79,14 +89,12 @@ public class EventStoreBackgroundService(
             await lobbyEvent.Accept(viewModelRepository, cancellationToken);
         else
             logger.LogWarning("recieve unknown lobby event type: {EventEventType}", resolvedEvent.Event.EventType);
-        
+
         await viewModelRepository.SetCurrentLobbyStreamPositionAsync(
-            resolvedEvent.Event.Position.CommitPosition, 
+            resolvedEvent.Event.Position.CommitPosition,
             resolvedEvent.Event.Position.PreparePosition,
             cancellationToken);
-        
+
         CurrentPosition = resolvedEvent.Event.Position;
     }
-
-   
 }
