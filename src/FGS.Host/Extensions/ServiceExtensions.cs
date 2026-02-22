@@ -1,9 +1,8 @@
 ﻿using FGS.Auth;
 using FGS.Auth.Entities;
-using FGS.Auth.Enums;
 using FGS.Auth.Managers;
 using FGS.Auth.Services;
-using FGS.DAL.LobbyViewModelRepository;
+using FGS.DAL.ViewModelRepository;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -40,7 +39,7 @@ public static class ServiceExtensions
 
     public static IHostApplicationBuilder AddViewModelContext(this IHostApplicationBuilder builder)
     {
-        builder.Services.AddDbContext<LobbyViewModelContext>(options =>
+        builder.Services.AddDbContext<FgsViewModelContext>(options =>
             options.UseNpgsql(builder.Configuration.GetConnectionString("LobbyViewModelConnection")));
         return builder;
     }
@@ -52,7 +51,7 @@ public static class ServiceExtensions
         var services = scope.ServiceProvider;
         try
         {
-            var context = services.GetRequiredService<LobbyViewModelContext>();
+            var context = services.GetRequiredService<FgsViewModelContext>();
             await context.Database.MigrateAsync();
                 
             logger.LogInformation("Init LobbyViewModel Database");

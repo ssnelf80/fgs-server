@@ -12,7 +12,7 @@ public abstract class BaseSearchFilter<T>
    
     public bool IgnoreCase { get; set; } = false;
     public string SearchString { get; set; } = string.Empty;
-    public string GetLowercaseSearchString() => SearchString.ToLower();
+    protected string GetLowercaseSearchString() => SearchString.ToLower();
     
     public abstract Expression<Func<T, bool>> GetWhereExpression();
 }

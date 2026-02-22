@@ -3,6 +3,9 @@ using EventStore.Client;
 using FGS.Adapters.JsonConvert.Lobby;
 using FGS.App;
 using FGS.DAL;
+using FGS.DAL.BackgroundServices;
+using FGS.DAL.EventSourceRepositories;
+using FGS.DAL.ViewModelRepository;
 using FGS.Domain.Base;
 using FGS.Domain.FgsLobby.Aggregate;
 using FGS.Domain.FgsLobby.Events;
@@ -36,9 +39,12 @@ var settings = EventStoreClientSettings.Create(builder.Configuration.GetConnecti
 builder.Services.AddSingleton(new EventStoreClient(settings));
 builder.Services.AddScoped<IAggregateRepository<Lobby, LobbyEvent>, LobbyRepository>();
 
+builder.Services.AddHostedService<EventStoreBackgroundService>();
+
 // app
 builder.Services.AddScoped<LobbyAppService>();
 builder.Services.AddSingleton<ILobbyEventJsonConvert, LobbyEventJsonConvert>();
+builder.Services.AddScoped<IFgsViewModelRepository, FgsViewModelRepository>();
 
 // view model
 builder.AddViewModelContext();

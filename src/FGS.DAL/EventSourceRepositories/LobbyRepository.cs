@@ -1,19 +1,18 @@
-﻿using System.Runtime.CompilerServices;
-using System.Text.Json;
-using EventStore.Client;
+﻿using EventStore.Client;
 using FGS.Domain.Base;
 using FGS.Domain.FgsLobby.Aggregate;
 using FGS.Domain.FgsLobby.Events;
 using FGS.Domain.Services;
 
-namespace FGS.DAL;
+namespace FGS.DAL.EventSourceRepositories;
 
 public class LobbyRepository(
     EventStoreClient eventStoreClient,
     ILobbyEventJsonConvert jsonConvert
     ) : IAggregateRepository<Lobby, LobbyEvent>
 {
-    public static string GetStreamName(Guid id) => $"Lobby-{id}";
+    public const string StreamPrefix = "Lobby-";
+    public static string GetStreamName(Guid id) => $"{StreamPrefix}{id}";
     public Task<Lobby> GetAsync(Guid Id, CancellationToken cancellationToken)
     {
         throw new NotImplementedException();
