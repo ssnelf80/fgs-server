@@ -33,5 +33,20 @@ public class FgsUserManager(
             nameof(FgsUserRole.Master), 
             nameof(FgsUserRole.Spectator)]);
     }
+
+    public async Task<IdentityResult> CreateDefaultUser(string login, string password)
+    {
+        var user = new FgsUser(login);
+        var identityResult = await CreateAsync(user, password);
+        
+        if (!identityResult.Succeeded)
+            return identityResult;
+        
+        return await AddToRolesAsync(user, 
+        [
+            nameof(FgsUserRole.Player), 
+            nameof(FgsUserRole.Master), 
+            nameof(FgsUserRole.Spectator)]);
+    }
 }
 
