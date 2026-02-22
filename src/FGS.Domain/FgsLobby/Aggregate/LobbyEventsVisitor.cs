@@ -1,5 +1,4 @@
-﻿using FGS.Domain.Base;
-using FGS.Domain.FgsLobby.Context.Requests;
+﻿using FGS.Domain.FgsLobby.Context.Requests;
 using FGS.Domain.FgsLobby.Enums;
 using FGS.Domain.FgsLobby.Events;
 
@@ -23,15 +22,15 @@ public sealed partial class Lobby
 
         public bool Visit(PlayerConnectedLobbyEvent e, CancellationToken ct = default)
         {
-            lobby._context.SendRequest(new AddPlayerRequest(e.UserId));
-            if (lobby._context.Status == LobbyGameStateEnum.ReadyToInitialize)
-                lobby._context.SendRequest(new InitializeGameRequest());
+            lobby.Context.SendRequest(new AddPlayerRequest(e.UserId));
+            if (lobby.Context.Status == LobbyGameStateEnum.ReadyToInitialize)
+                lobby.Context.SendRequest(new InitializeGameRequest());
             return true;
         }
 
         public bool Visit(PlayerDisconnectedLobbyEvent e, CancellationToken ct = default)
         {
-            lobby._context.SendRequest(new RemovePlayerRequest(e.UserId));
+            lobby.Context.SendRequest(new RemovePlayerRequest(e.UserId));
             return true;
         }
     }

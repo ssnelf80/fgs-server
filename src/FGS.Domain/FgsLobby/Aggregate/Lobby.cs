@@ -1,6 +1,5 @@
 ﻿using FGS.Domain.Base;
 using FGS.Domain.FgsLobby.Context;
-using FGS.Domain.FgsLobby.Context.Requests;
 using FGS.Domain.FgsLobby.Entities;
 using FGS.Domain.FgsLobby.Enums;
 using FGS.Domain.FgsLobby.Events;
@@ -11,6 +10,7 @@ namespace FGS.Domain.FgsLobby.Aggregate;
 public sealed partial class Lobby : AggregateRoot<LobbyEvent>
 {
     private LobbyStateContext _context = null!;
+    private LobbyStateContext Context => _context ?? throw new LobbyException("LobbyContext is not initialized");
     private readonly InnerLobbyManagerVisitor _innerLobbyManagerVisitor;
     public LobbyStatus Status { get; private set; }
     
@@ -34,7 +34,7 @@ public sealed partial class Lobby : AggregateRoot<LobbyEvent>
     public void ConnectUser(Guid userId)
     {
         EmitEvent(new PlayerConnectedLobbyEvent(Id, userId));
-        if (_context.Status != LobbyGameStateEnum.WaitPlayers) // todo финишный статус проверку
+        if (Context.Status != LobbyGameStateEnum.WaitPlayers) // todo финишный статус проверку
         {
             EmitEvent(new LobbyStatusChangedEvent(Id, LobbyStatus.InProgress));
         }

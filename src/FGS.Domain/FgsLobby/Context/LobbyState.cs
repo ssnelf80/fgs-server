@@ -7,7 +7,8 @@ namespace FGS.Domain.FgsLobby.Context;
 
 public abstract class LobbyState
 {
-    protected LobbyStateContext Context = null!;
+    private LobbyStateContext? _context;
+    protected LobbyStateContext Context => _context ?? throw new LobbyStateException("Context is not initialized");
     
     public abstract LobbyGameStateEnum GameState { get; }
     
@@ -19,7 +20,7 @@ public abstract class LobbyState
     
     protected LobbyState(LobbyState other) : this(other.LobbySettings, other._playersMap)
     {
-        Context = other.Context;
+        _context = other.Context;
         _rnd = other._rnd;
     }
     protected LobbyState(
@@ -54,7 +55,7 @@ public abstract class LobbyState
         _rnd = new Random(seed);
     }
 
-    public void SetContext(LobbyStateContext context) => Context = context;
+    public void SetContext(LobbyStateContext context) => _context = context;
 
     public virtual void Handle(ILobbyContextRequest request)
     {

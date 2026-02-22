@@ -1,17 +1,18 @@
-﻿using FGS.Domain.FgsLobby.Context;
-using FGS.Domain.FgsLobby.Context.Requests;
+﻿using FGS.Domain.FgsLobby.Context.Requests;
 using FGS.Domain.FgsLobby.Context.States;
 using FGS.Domain.FgsLobby.Entities;
 using FGS.Domain.FgsLobby.Enums;
+using FGS.Domain.FgsLobby.Exceptions;
 
 namespace FGS.Domain.FgsLobby.Context;
 
 public class LobbyStateContext
 {
     private LobbyState _state = null!;
+    
     public LobbyGameStateEnum Status => _state.GameState;
 
-    protected LobbyStateContext(LobbyState state)
+    private LobbyStateContext(LobbyState state)
     {
         TransitionTo(state);
     }
