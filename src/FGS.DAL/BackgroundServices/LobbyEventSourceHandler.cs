@@ -3,6 +3,7 @@ using EventStore.Client;
 using FGS.DAL.EventSourceRepositories;
 using FGS.Domain.FgsLobby.Events;
 using FGS.Domain.Services;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
@@ -10,7 +11,7 @@ namespace FGS.DAL.BackgroundServices;
 
 public class EventStoreBackgroundService(
     EventStoreClient eventStoreClient,
-    IFgsViewModelRepository viewModelRepository,
+    IServiceProvider serviceProvider,
     ILogger<EventStoreBackgroundService> logger
     ) : BackgroundService
 {
@@ -23,12 +24,18 @@ public class EventStoreBackgroundService(
         {
             try
             {
-               var offset = await viewModelRepository.GetCurrentLobbyStreamPositionAsync(stoppingToken);
-               Position currentPosition = Position.Start;
-               if (offset != null)
-                   currentPosition = new Position(offset.Value.CommitPosition, offset.Value.PreparePosition);
+                Position currentPosition = Position.Start;
+                using (var scope = serviceProvider.CreateScope())
+                {
+                    var services = scope.ServiceProvider;  
+                    var viewModelRepository = services.GetRequiredService<IFgsViewModelRepository>();
+                    var offset = await viewModelRepository.GetCurrentLobbyStreamPositionAsync(stoppingToken);
+                    
+                    if (offset != null)
+                        currentPosition = new Position(offset.Value.CommitPosition, offset.Value.PreparePosition);
+                }
                
-               var subscription = await eventStoreClient.SubscribeToAllAsync(
+                var subscription = await eventStoreClient.SubscribeToAllAsync(
                     FromAll.After(currentPosition),
                     EventAppeared,
                     false,
@@ -52,6 +59,10 @@ public class EventStoreBackgroundService(
 
     private async Task EventAppeared(StreamSubscription subscription, ResolvedEvent resolvedEvent, CancellationToken cancellationToken)
     {
+        using var scope = serviceProvider.CreateScope();
+        var services = scope.ServiceProvider;  
+        var viewModelRepository = services.GetRequiredService<IFgsViewModelRepository>();
+        
         LobbyEvent? lobbyEvent = resolvedEvent.Event.EventType switch
         {
             nameof(LobbyCreatedEvent) => JsonSerializer.Deserialize<LobbyCreatedEvent>(resolvedEvent.Event.Data.Span),
