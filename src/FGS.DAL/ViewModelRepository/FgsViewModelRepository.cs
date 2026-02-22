@@ -4,10 +4,14 @@ using FGS.Domain.FgsLobby.Enums;
 using FGS.Domain.FgsLobby.Events;
 using FGS.Domain.Services;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace FGS.DAL.ViewModelRepository;
 
-public class FgsViewModelRepository(FgsViewModelContext db) : IFgsViewModelRepository
+public class FgsViewModelRepository(
+    FgsViewModelContext db,
+    ILogger<FgsViewModelRepository> logger
+    ) : IFgsViewModelRepository
 {
     public async Task<IReadOnlyCollection<LobbyEntity>> GetLobbyEntitiesListAsync(LobbyEntitySearchFilter searchFilter, CancellationToken cancellationToken) =>
         await db.Lobbies.Where(searchFilter.GetWhereExpression())
@@ -28,21 +32,30 @@ public class FgsViewModelRepository(FgsViewModelContext db) : IFgsViewModelRepos
     public async Task SetCurrentLobbyStreamPositionAsync(ulong commitPosition, ulong preparePosition,
         CancellationToken cancellationToken)
     {
-        var tracker = await db.StreamTrackers.FirstOrDefaultAsync(x =>
-            x.StreamTypeId == (int)EventSourceStreamTracker.StreamType.Lobby, cancellationToken: cancellationToken);
-        if (tracker == null)
+        if (!await db.StreamTrackers
+                .AnyAsync(x 
+                    => x.StreamTypeId == (int)EventSourceStreamTracker.StreamType.Lobby, cancellationToken))
         {
             await db.StreamTrackers
                 .AddAsync(new EventSourceStreamTracker((int)EventSourceStreamTracker.StreamType.Lobby, commitPosition, preparePosition), cancellationToken);
+            await db.SaveChangesAsync(cancellationToken);
             return;
         }
 
-        db.StreamTrackers.Update(tracker with { CommitPosition = commitPosition, PreparePosition = preparePosition });
-        await db.SaveChangesAsync(cancellationToken);
+        await db.StreamTrackers
+            .Where(x => x.StreamTypeId == (int)EventSourceStreamTracker.StreamType.Lobby)
+            .ExecuteUpdateAsync(x =>
+                x.SetProperty(p => p.PreparePosition, preparePosition)
+                    .SetProperty(p => p.CommitPosition, commitPosition), cancellationToken);
     }
 
     public async Task Visit(LobbyCreatedEvent e, CancellationToken ct = default)
     {
+        if (db.Lobbies.Any(x => x.Id == e.LobbyId))
+        {
+            logger.LogWarning($"Lobby with id {e.LobbyId} has already been created");
+            return;
+        }
         await db.Lobbies.AddAsync(new LobbyEntity(
             e.LobbyId,
             e.Name,

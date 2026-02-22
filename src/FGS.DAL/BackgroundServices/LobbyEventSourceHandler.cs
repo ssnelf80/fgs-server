@@ -15,6 +15,7 @@ public class EventStoreBackgroundService(
     ILogger<EventStoreBackgroundService> logger
     ) : BackgroundService
 {
+    private static Position CurrentPosition = Position.Start;
     private static SubscriptionFilterOptions FilterOptions
         => new(StreamFilter.Prefix(LobbyRepository.StreamPrefix));
     
@@ -24,19 +25,21 @@ public class EventStoreBackgroundService(
         {
             try
             {
-                Position currentPosition = Position.Start;
-                using (var scope = serviceProvider.CreateScope())
+                if (CurrentPosition == Position.Start)
                 {
-                    var services = scope.ServiceProvider;  
-                    var viewModelRepository = services.GetRequiredService<IFgsViewModelRepository>();
-                    var offset = await viewModelRepository.GetCurrentLobbyStreamPositionAsync(stoppingToken);
+                    using (var scope = serviceProvider.CreateScope())
+                    {
+                        var services = scope.ServiceProvider;  
+                        var viewModelRepository = services.GetRequiredService<IFgsViewModelRepository>();
+                        var offset = await viewModelRepository.GetCurrentLobbyStreamPositionAsync(stoppingToken);
                     
-                    if (offset != null)
-                        currentPosition = new Position(offset.Value.CommitPosition, offset.Value.PreparePosition);
+                        if (offset != null)
+                            CurrentPosition = new Position(offset.Value.CommitPosition, offset.Value.PreparePosition);
+                    }
                 }
                
                 var subscription = await eventStoreClient.SubscribeToAllAsync(
-                    FromAll.After(currentPosition),
+                    FromAll.After(CurrentPosition),
                     EventAppeared,
                     false,
                     subscriptionDropped: SubscriptionDropped,
@@ -81,6 +84,8 @@ public class EventStoreBackgroundService(
             resolvedEvent.Event.Position.CommitPosition, 
             resolvedEvent.Event.Position.PreparePosition,
             cancellationToken);
+        
+        CurrentPosition = resolvedEvent.Event.Position;
     }
 
    
