@@ -1,5 +1,9 @@
 ﻿using FGS.App;
 using FGS.App.Models;
+using FGS.DAL.EventSourceRepositories;
+using FGS.Domain.Base;
+using FGS.Domain.FgsLobby.Aggregate;
+using FGS.Domain.FgsLobby.Events;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
@@ -22,6 +26,7 @@ public class LobbyStateTests : IClassFixture<WebApplicationFactory<Program>>
        var ct = TestContext.Current.CancellationToken;
        using var scope = _factory.Services.CreateScope();
        var lobbyAppService = scope.ServiceProvider.GetService<LobbyAppService>()!;
+       var lobbyRepository = scope.ServiceProvider.GetService<IAggregateRepository<Lobby, LobbyEvent>>()!;
        var user1 = Guid.NewGuid();
        var user2 = Guid.NewGuid();
        var masterUser = Guid.NewGuid();
@@ -30,7 +35,7 @@ public class LobbyStateTests : IClassFixture<WebApplicationFactory<Program>>
 
        await lobbyAppService.ConnectToLobbyAsync(lobbyId, user1, ct);
        await lobbyAppService.ConnectToLobbyAsync(lobbyId, user2, ct);
-       
+       var lobby = await lobbyRepository.GetAsync(lobbyId, ct);
        Assert.True(true);
     }
 }

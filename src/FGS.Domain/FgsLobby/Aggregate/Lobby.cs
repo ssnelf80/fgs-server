@@ -34,7 +34,7 @@ public sealed partial class Lobby : AggregateRoot<LobbyEvent>
     public void ConnectUser(Guid userId)
     {
         EmitEvent(new PlayerConnectedLobbyEvent(Id, userId));
-        if (_context.Status == LobbyGameStateEnum.GameWelcomeInformation)
+        if (_context.Status != LobbyGameStateEnum.WaitPlayers) // todo финишный статус проверку
         {
             EmitEvent(new LobbyStatusChangedEvent(Id, LobbyStatus.InProgress));
         }

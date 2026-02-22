@@ -5,16 +5,26 @@ namespace FGS.Domain.FgsLobby.Context.States;
 
 public class LobbyInitializeState : LobbyState
 {
-    public bool IsSuccess { get; private set; } = false;
     public LobbyInitializeState(LobbyState other) : base(other)
     {
-        InitPlayerRoles();
-        InitStartBalance();
-        IsSuccess = true;
+       
     }
 
     public override LobbyGameStateEnum GameState => LobbyGameStateEnum.ReadyToInitialize;
-    
+
+    public override void Handle(ILobbyContextRequest request)
+    {
+        if (request is not InitializeGameRequest)
+        {
+            base.Handle(request);
+            return;
+        }
+        
+        InitPlayerRoles();
+        InitStartBalance();
+        Context.TransitionTo(new LobbyWelcomeState(this));
+    }
+
     private void InitPlayerRoles()
     {
         foreach (var player in Players())

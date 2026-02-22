@@ -1,5 +1,6 @@
 ﻿using FGS.Domain.Base;
 using FGS.Domain.FgsLobby.Context.Requests;
+using FGS.Domain.FgsLobby.Enums;
 using FGS.Domain.FgsLobby.Events;
 
 namespace FGS.Domain.FgsLobby.Aggregate;
@@ -23,6 +24,8 @@ public sealed partial class Lobby
         public bool Visit(PlayerConnectedLobbyEvent e, CancellationToken ct = default)
         {
             lobby._context.SendRequest(new AddPlayerRequest(e.UserId));
+            if (lobby._context.Status == LobbyGameStateEnum.ReadyToInitialize)
+                lobby._context.SendRequest(new InitializeGameRequest());
             return true;
         }
 

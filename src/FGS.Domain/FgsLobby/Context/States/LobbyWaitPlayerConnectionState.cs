@@ -40,12 +40,7 @@ public class LobbyWaitPlayerConnectionState : LobbyState
 
         if (UnsafePlayerMap.Count == LobbySettings.PlayersCount)
         {
-            var lobbyInit = new LobbyInitializeState(this);
-            Context.TransitionTo(lobbyInit);
-            if (lobbyInit.IsSuccess)
-                Context.TransitionTo(new LobbyWelcomeState(lobbyInit));
-            else
-                throw new LobbyStateException("не удалось инициализировать игру");
+            Context.TransitionTo(new LobbyInitializeState(this));
         }
            
     }
