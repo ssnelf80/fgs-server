@@ -36,7 +36,7 @@ public class LobbyWaitPlayerConnectionState : LobbyState
         if (UnsafePlayerMap.ContainsKey(userId))
             throw new LobbyStateException($"Игрок с ID : {userId} уже существует");
 
-        UnsafePlayerMap.Add(userId, new Player(userId, LobbySettings.StartBalance, PlayerRole.Unknown, false));
+        UnsafePlayerMap.Add(userId, new Player(userId, 0, PlayerRole.Unknown, false));
 
         if (UnsafePlayerMap.Count == LobbySettings.PlayersCount)
         {
