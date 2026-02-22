@@ -2,6 +2,7 @@
 using FGS.App.Models;
 using FGS.Auth.Entities;
 using FGS.Auth.Enums;
+using FGS.Domain.FgsLobby.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -21,5 +22,31 @@ public class LobbyController(SignInManager<FgsUser> signInManager, LobbyAppServi
         var user = await signInManager.UserManager.GetUserAsync(User);
         var userId = Guid.Parse(user!.Id);
         await lobbyAppService.CreateLobbyAsync(new CreateLobbyRequest(userId, Guid.NewGuid().ToString()), ct);
+    }
+    
+    [HttpGet]
+    [Route("list")]
+    public async Task<IReadOnlyCollection<LobbyEntity>> UsersListAsync(
+        string? searchString, 
+        int? offset, 
+        int? limit,
+        bool? ingnoreCase, 
+        CancellationToken cancellationToken)
+    {
+       return await lobbyAppService.GetLobbyListAsync(new LobbyEntitySearchFilter
+        {
+            Offset = offset ?? 0,
+            Limit = limit ?? 20,
+            IgnoreCase = ingnoreCase ?? true,
+            SearchString = searchString ?? string.Empty,
+        }, cancellationToken);
+    }
+
+    [HttpPost]
+    [Route("connect/{lobbyId}")]
+    public async Task CreateLobbyAsync(Guid lobbyId, CancellationToken ct)
+    {
+        var user = await signInManager.UserManager.GetUserAsync(User);
+        await lobbyAppService.ConnectToLobbyAsync(lobbyId, Guid.Parse(user!.Id), ct);
     }
 }

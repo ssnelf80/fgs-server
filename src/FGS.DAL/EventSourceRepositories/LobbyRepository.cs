@@ -1,4 +1,5 @@
 ﻿using EventStore.Client;
+using FGS.DAL.Extensions;
 using FGS.Domain.Base;
 using FGS.Domain.FgsLobby.Aggregate;
 using FGS.Domain.FgsLobby.Events;
@@ -13,9 +14,24 @@ public class LobbyRepository(
 {
     public const string StreamPrefix = "Lobby-";
     public static string GetStreamName(Guid id) => $"{StreamPrefix}{id}";
-    public Task<Lobby> GetAsync(Guid Id, CancellationToken cancellationToken)
+    public async Task<Lobby> GetAsync(Guid id, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        var rawEvents = eventStoreClient.ReadStreamAsync(Direction.Forwards,
+            GetStreamName(id), StreamPosition.Start, cancellationToken : cancellationToken);
+       
+        List<LobbyEvent> lobbyEvents = [];
+        var lastRevision = ulong.MaxValue;
+
+        await foreach (var rawEvent in rawEvents)
+        {
+            lobbyEvents.Add(rawEvent.GetLobbyEvent());
+            lastRevision = rawEvent.OriginalEventNumber.ToUInt64();
+        }
+        
+        if (lastRevision == ulong.MaxValue)
+           throw new ArgumentOutOfRangeException("No lobby events found");
+        
+        return new Lobby(id, lastRevision, lobbyEvents);
     }
 
     public async Task SaveAsync(Lobby aggregate, CancellationToken cancellationToken)

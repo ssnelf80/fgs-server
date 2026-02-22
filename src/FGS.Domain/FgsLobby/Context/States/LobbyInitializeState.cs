@@ -3,19 +3,17 @@ using FGS.Domain.FgsLobby.Enums;
 
 namespace FGS.Domain.FgsLobby.Context.States;
 
-public class LobbyReadyToInitializeState(LobbyState other) : LobbyState(other)
+public class LobbyInitializeState : LobbyState
 {
-    public override LobbyGameStateEnum GameState => LobbyGameStateEnum.ReadyToInitialize;
-    public override void Handle(ILobbyContextRequest request)
+    public bool IsSuccess { get; private set; } = false;
+    public LobbyInitializeState(LobbyState other) : base(other)
     {
-        if (request is InitializeGameRequest)
-        {
-            InitPlayerRoles();
-            InitStartBalance();
-            return;
-        }
-        base.Handle(request);
+        InitPlayerRoles();
+        InitStartBalance();
+        IsSuccess = true;
     }
+
+    public override LobbyGameStateEnum GameState => LobbyGameStateEnum.ReadyToInitialize;
     
     private void InitPlayerRoles()
     {

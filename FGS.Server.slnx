@@ -9,4 +9,5 @@
   <Project Path="src/FGS.DAL/FGS.DAL.csproj" />
   <Project Path="src/FGS.Domain/FGS.Domain.csproj" />
   <Project Path="src/FGS.Host/FGS.Host.csproj" />
+  <Project Path="src/FGS.Test/FGS.Test.csproj" />
 </Solution>

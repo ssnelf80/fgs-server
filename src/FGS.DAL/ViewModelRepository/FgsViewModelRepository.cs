@@ -73,35 +73,38 @@ public class FgsViewModelRepository(
 
     public async Task<bool> Visit(LobbyStatusChangedEvent e, CancellationToken ct = default)
     {
-        var lobby = await db.Lobbies.FirstOrDefaultAsync(x => x.Id == e.LobbyId, cancellationToken: ct);
+        var query = db.Lobbies.Where(x => x.Id == e.LobbyId);
+        var lobby = await query.FirstOrDefaultAsync(ct);
         if (lobby == null)
         {
             logger.LogWarning($"Lobby with id {e.LobbyId} has not been created");
             return false;
         }
-        db.Lobbies.Update(lobby with { Status = e.Status });
-        await db.SaveChangesAsync(ct);
+        await query.ExecuteUpdateAsync(x => x.SetProperty(
+            p => p.Status, e.Status), ct);
         return true;
     }
 
     public async Task<bool> Visit(PlayerConnectedLobbyEvent e, CancellationToken ct = default)
     {
-        var lobby = await db.Lobbies.FirstOrDefaultAsync(x => x.Id == e.LobbyId, cancellationToken: ct);
+        var query = db.Lobbies.Where(x => x.Id == e.LobbyId);
+        var lobby = await query.FirstOrDefaultAsync(ct);
         if (lobby == null)
         {
             logger.LogWarning($"Lobby with id {e.LobbyId} has not been created");
             return false;
         }
-        
+       
         var newUserList = lobby.ConnectedUsers.Concat([e.UserId]).ToList();
-        db.Lobbies.Update(lobby with { ConnectedUsers = newUserList});
-        await db.SaveChangesAsync(ct);
+        await query.ExecuteUpdateAsync(x => x.SetProperty(
+            p => p.ConnectedUsers, newUserList), ct);
         return true;
     }
 
     public async Task<bool> Visit(PlayerDisconnectedLobbyEvent e, CancellationToken ct = default)
     {
-        var lobby = await db.Lobbies.FirstOrDefaultAsync(x => x.Id == e.LobbyId, cancellationToken: ct);
+        var query = db.Lobbies.Where(x => x.Id == e.LobbyId);
+        var lobby = await query.FirstOrDefaultAsync(ct);
         if (lobby == null)
         {
             logger.LogWarning($"Lobby with id {e.LobbyId} has not been created");
@@ -109,8 +112,8 @@ public class FgsViewModelRepository(
         }
         
         var newUserList = lobby.ConnectedUsers.Where(x => x != e.UserId).ToList();
-        db.Lobbies.Update(lobby with { ConnectedUsers = newUserList});
-        await db.SaveChangesAsync(ct);
+        await query.ExecuteUpdateAsync(x => x.SetProperty(
+            p => p.ConnectedUsers, newUserList), ct);
         return true;
     }
 }

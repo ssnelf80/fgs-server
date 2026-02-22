@@ -4,7 +4,7 @@ public record LobbySettings
 {
     public static LobbySettings Default => new()
     {
-        PlayersCount = 4,
+        PlayersCount = 2, // todo на нужный вариант, пока для теста
         TraitorsCount = 1,
         StartBalance = 100_000,
         RandomizerSeed = Environment.TickCount,

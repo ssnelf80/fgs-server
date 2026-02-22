@@ -4,6 +4,6 @@ public interface IAggregateRepository<TAggregate, TDomainEvent>
     where TAggregate : AggregateRoot<TDomainEvent>
     where TDomainEvent : IDomainEvent
 {
-    Task<TAggregate> GetAsync(Guid Id, CancellationToken cancellationToken);
+    Task<TAggregate> GetAsync(Guid id, CancellationToken cancellationToken);
     Task SaveAsync(TAggregate aggregate, CancellationToken cancellationToken);
 }

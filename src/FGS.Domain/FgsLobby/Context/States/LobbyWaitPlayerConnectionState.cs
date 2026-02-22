@@ -37,9 +37,17 @@ public class LobbyWaitPlayerConnectionState : LobbyState
             throw new LobbyStateException($"Игрок с ID : {userId} уже существует");
 
         UnsafePlayerMap.Add(userId, new Player(userId, LobbySettings.StartBalance, PlayerRole.Unknown, false));
-        
+
         if (UnsafePlayerMap.Count == LobbySettings.PlayersCount)
-            Context.TransitionTo(new LobbyReadyToInitializeState(this));
+        {
+            var lobbyInit = new LobbyInitializeState(this);
+            Context.TransitionTo(lobbyInit);
+            if (lobbyInit.IsSuccess)
+                Context.TransitionTo(new LobbyWelcomeState(lobbyInit));
+            else
+                throw new LobbyStateException("не удалось инициализировать игру");
+        }
+           
     }
     private void RemovePlayer(Guid userId)
     {

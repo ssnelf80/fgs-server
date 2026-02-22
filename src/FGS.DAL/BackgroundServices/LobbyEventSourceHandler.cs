@@ -1,6 +1,7 @@
 ﻿using System.Text.Json;
 using EventStore.Client;
 using FGS.DAL.EventSourceRepositories;
+using FGS.DAL.Extensions;
 using FGS.Domain.FgsLobby.Events;
 using FGS.Domain.Services;
 using Microsoft.Extensions.DependencyInjection;
@@ -63,7 +64,6 @@ public class EventStoreBackgroundService(
     private void SubscriptionDropped(StreamSubscription sub, SubscriptionDroppedReason reason, Exception? ex)
     {
         logger.LogError(ex, "Subscription Dropped. Reason: {reason}", reason);
-        _ = ExecuteAsync(StoppingToken);
     }
 
     private async Task EventAppeared(StreamSubscription subscription, ResolvedEvent resolvedEvent,
@@ -72,18 +72,7 @@ public class EventStoreBackgroundService(
         using var scope = serviceProvider.CreateScope();
         var viewModelRepository = scope.ServiceProvider.GetRequiredService<IFgsViewModelRepository>();
 
-        LobbyEvent? lobbyEvent = resolvedEvent.Event.EventType switch
-        {
-            nameof(LobbyCreatedEvent) => JsonSerializer.Deserialize<LobbyCreatedEvent>(
-                resolvedEvent.Event.Data.Span),
-            nameof(PlayerConnectedLobbyEvent) => JsonSerializer.Deserialize<PlayerConnectedLobbyEvent>(resolvedEvent
-                .Event.Data.Span),
-            nameof(PlayerDisconnectedLobbyEvent) => JsonSerializer.Deserialize<PlayerDisconnectedLobbyEvent>(
-                resolvedEvent.Event.Data.Span),
-            nameof(LobbyStatusChangedEvent) => JsonSerializer.Deserialize<LobbyStatusChangedEvent>(resolvedEvent
-                .Event.Data.Span),
-            _ => null
-        };
+        var lobbyEvent = resolvedEvent.GetLobbyEventOrDefault();
 
         if (lobbyEvent != null)
             await lobbyEvent.Accept(viewModelRepository, cancellationToken);

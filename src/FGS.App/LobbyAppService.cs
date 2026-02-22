@@ -12,14 +12,22 @@ public class LobbyAppService(
     IFgsViewModelRepository fgsViewModelRepository
     )
 {
-    public async Task CreateLobbyAsync(CreateLobbyRequest request, CancellationToken ct)
+    public async Task<Guid> CreateLobbyAsync(CreateLobbyRequest request, CancellationToken ct)
     {
         // todo оплетку над стандартными исключениями eventStore и аггрегатов
         var lobby = Lobby.Create(request.UserId, request.Name, LobbySettings.Default);
         await lobbyRepository.SaveAsync(lobby, ct);
+        return lobby.Id;
     }
 
     public Task<IReadOnlyCollection<LobbyEntity>> GetLobbyListAsync(LobbyEntitySearchFilter searchFilter,
         CancellationToken ct) =>
         fgsViewModelRepository.GetLobbyEntitiesListAsync(searchFilter, ct);
+
+    public async Task ConnectToLobbyAsync(Guid lobbyId, Guid userId, CancellationToken ct)
+    {
+        var lobby = await lobbyRepository.GetAsync(lobbyId, ct);
+        lobby.ConnectUser(userId);
+        await lobbyRepository.SaveAsync(lobby, ct);
+    }
 }

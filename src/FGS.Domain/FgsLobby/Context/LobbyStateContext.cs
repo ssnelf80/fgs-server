@@ -8,12 +8,12 @@ namespace FGS.Domain.FgsLobby.Context;
 
 public class LobbyStateContext
 {
-    private LobbyState _state;
+    private LobbyState _state = null!;
     public LobbyGameStateEnum Status => _state.GameState;
 
     protected LobbyStateContext(LobbyState state)
     {
-        _state = state;
+        TransitionTo(state);
     }
     
     public void TransitionTo(LobbyState state)
@@ -24,6 +24,10 @@ public class LobbyStateContext
 
     public void SendRequest(ILobbyContextRequest request) => _state.Handle(request);
 
-    public static LobbyStateContext Create(LobbySettings lobbySettings) 
-        => new(new LobbyWaitPlayerConnectionState(lobbySettings, []));
+    public static LobbyStateContext Create(LobbySettings lobbySettings)
+    {
+        var lobbyState = new LobbyWaitPlayerConnectionState(lobbySettings, []);
+        var lobbyContext = new LobbyStateContext(lobbyState);
+        return lobbyContext;
+    }
 }
