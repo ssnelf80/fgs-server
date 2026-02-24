@@ -26,15 +26,29 @@ public class LobbyWelcomeState : LobbyState
 
     public override void Handle(ILobbyContextRequest request)
     {
-        if (request is SetUserChoicesRequest userValueRequest)
+        if (request is SetUserChoicesRequest userChoiceRequest)
         {
-            if (!IsPlayerExists(userValueRequest.UserId))
-                throw new LobbyStateException($"player with id = {userValueRequest.UserId} is not exist");
+            if (!IsPlayerExists(userChoiceRequest.UserId))
+                throw new LobbyStateException($"player with id = {userChoiceRequest.UserId} is not exist");
             
-            if (userValueRequest.Choices.Length == 0)
-                _playerConfirmations.Remove(userValueRequest.UserId);
+            if (userChoiceRequest.Choices.Length == 0)
+                _playerConfirmations.Remove(userChoiceRequest.UserId);
             else
-                _playerConfirmations.Add(userValueRequest.UserId);
+                _playerConfirmations.Add(userChoiceRequest.UserId);
+            
+            // todo next transition
+            
+            return;
+        }
+        
+        if (request is SetRandomUserChoicesRequest randomChoiceRequest)
+        {
+            if (!IsPlayerExists(randomChoiceRequest.UserId))
+                throw new LobbyStateException($"player with id = {randomChoiceRequest.UserId} is not exist");
+            if (!GetPlayer(randomChoiceRequest.UserId).IsBot)
+                throw new LobbyStateException($"player with id = {randomChoiceRequest.UserId} is not a bot");
+            
+            _playerConfirmations.Add(randomChoiceRequest.UserId);
             
             // todo next transition
             

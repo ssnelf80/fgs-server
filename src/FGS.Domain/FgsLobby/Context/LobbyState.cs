@@ -8,7 +8,7 @@ namespace FGS.Domain.FgsLobby.Context;
 public abstract class LobbyState
 {
     private LobbyStateContext? _context;
-    protected LobbyStateContext Context => _context ?? throw new LobbyStateException("Context is not initialized");
+    protected LobbyStateContext Context => _context ?? throw new InvalidInnerCallLobbyStateException("Context is not initialized");
     
     public abstract LobbyGameStateEnum GameState { get; }
     
@@ -16,7 +16,7 @@ public abstract class LobbyState
     protected readonly LobbySettings LobbySettings;
     private readonly Dictionary<Guid, Player> _playersMap = [];
     private Random? _rnd = null;
-    protected Random Random => _rnd ?? throw new LobbyStateException("Lobby rand generator is not initialized");
+    protected Random Random => _rnd ?? throw new InvalidInnerCallLobbyStateException("Lobby rand generator is not initialized");
     
     protected LobbyState(LobbyState other) : this(other.LobbySettings, other._playersMap)
     {
@@ -33,19 +33,26 @@ public abstract class LobbyState
         _playersMap = playersMap;
     }
 
-    protected abstract void DoBotActions();
+    /// <summary>
+    /// should be empty if state has not actions
+    /// </summary>
+    protected virtual void DoBotActions()
+    {
+        
+    }
     protected abstract string[] GetRandomPlayerChoice(Guid userId);
     protected bool IsPlayerExists(Guid userId) => _playersMap.ContainsKey(userId);
     protected Player GetPlayer(Guid playerId) => _playersMap[playerId];
     protected Player UpdatePlayer(Player player)
     {
         if (!_playersMap.ContainsKey(player.UserId))
-            throw new LobbyStateException("Player not found");
+            throw new InvalidOperationLobbyStateException("Player not found");
         
         _playersMap[player.UserId] = player;
         return player;
     }
-    protected Dictionary<Guid, Player> UnsafePlayerMap => _enableUnsafeContext ? _playersMap : throw new LobbyStateException("Unsafe call");
+    protected Dictionary<Guid, Player> UnsafePlayerMap => _enableUnsafeContext 
+        ? _playersMap : throw new InvalidInnerCallLobbyStateException(nameof(UnsafePlayerMap));
 
     protected IReadOnlyList<Player> Players()  => _playersMap.Values.OrderBy(x=> x.UserId).ToList().AsReadOnly();
     protected IReadOnlyList<Player> InnocentPlayers() => _playersMap.Values.Where(x=> x.Role == PlayerRole.Innocent).OrderBy(x=> x.UserId).ToList().AsReadOnly();
@@ -55,7 +62,7 @@ public abstract class LobbyState
     protected void InitRandom(int seed)
     {
         if (_rnd is not null)
-            throw new LobbyStateException("Rand generator already initialized");
+            throw new InvalidInnerCallLobbyStateException("Rand generator already initialized");
         _rnd = new Random(seed);
     }
 
@@ -63,7 +70,6 @@ public abstract class LobbyState
 
     public virtual void Handle(ILobbyContextRequest request)
     {
-        // todo подробности исключения
-        throw new LobbyStateException("Недопустимая операция");
+        throw new InvalidOperationLobbyStateException(request.GetType().Name);
     }
 }

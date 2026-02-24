@@ -1,23 +1,16 @@
 ﻿using FGS.Domain.FgsLobby.Context.Requests;
 using FGS.Domain.FgsLobby.Enums;
+using FGS.Domain.FgsLobby.Exceptions;
 
 namespace FGS.Domain.FgsLobby.Context.States;
 
-public class LobbyInitializeState : LobbyState
+public class LobbyInitializeState(LobbyState other) : LobbyState(other)
 {
-    public LobbyInitializeState(LobbyState other) : base(other)
-    {
-       
-    }
-
     public override LobbyGameStateEnum GameState => LobbyGameStateEnum.ReadyToInitialize;
-    protected override void DoBotActions()
-    {
-        throw new NotImplementedException();
-    }
+   
     protected override string[] GetRandomPlayerChoice(Guid userId)
     {
-        throw new NotImplementedException();
+        throw new InvalidInnerCallLobbyStateException("GetRandomPlayerChoice");
     }
 
     public override void Handle(ILobbyContextRequest request)
