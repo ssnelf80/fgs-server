@@ -28,16 +28,55 @@ public sealed partial class Lobby : AggregateRoot<LobbyEvent>
         lobby.EmitEvent(new LobbyCreatedEvent(lobby.Id, name, masterUserId, lobbySettings, DateTimeOffset.UtcNow));
         return lobby;
     }
+
+    public void ConnectBot(Guid botId)
+    {
+        EmitEvent(new BotConnectedLobbyEvent(Id, botId));
+        
+        if (Context.Status != LobbyGameStateEnum.WaitPlayers)
+            EmitEvent(new LobbyStatusChangedEvent(Id, LobbyStatus.InProgress));
+        if (Context.Status == LobbyGameStateEnum.EndState)
+            EmitEvent(new LobbyStatusChangedEvent(Id, LobbyStatus.Closed));
+    }
+    
+    public void DisconnectBot(Guid botId) => EmitEvent(new BotDisconnectedLobbyEvent(Id, botId));
+
+    public void SetBotToUser(Guid userId)
+    {
+        EmitEvent(new SetBotToPlayerLobbyEvent(Id, userId));
+        if (Context.Status == LobbyGameStateEnum.EndState)
+            EmitEvent(new LobbyStatusChangedEvent(Id, LobbyStatus.Closed));
+    }
+
+    public void RemoveBotFromUser(Guid userId)
+    {
+        EmitEvent(new RemoveBotFromPlayerLobbyEvent(Id, userId));
+    }
+
+    public void SetUserChoice(Guid userId, params string[] choices)
+    {
+        EmitEvent(new LobbySetUserChoiceEvent(Id, userId, choices));
+        if (Context.Status == LobbyGameStateEnum.EndState)
+            EmitEvent(new LobbyStatusChangedEvent(Id, LobbyStatus.Closed));
+    }
+    
+    public void SetRandomUserChoice(Guid userId)
+    {
+        EmitEvent(new LobbySetUserRandomChoiceEvent(Id, userId));
+        if (Context.Status == LobbyGameStateEnum.EndState)
+            EmitEvent(new LobbyStatusChangedEvent(Id, LobbyStatus.Closed));
+    }
     
     public void DisconnectUser(Guid userId) => EmitEvent(new PlayerDisconnectedLobbyEvent(Id, userId));
 
     public void ConnectUser(Guid userId)
     {
         EmitEvent(new PlayerConnectedLobbyEvent(Id, userId));
-        if (Context.Status != LobbyGameStateEnum.WaitPlayers) // todo финишный статус проверку
-        {
+        
+        if (Context.Status != LobbyGameStateEnum.WaitPlayers)
             EmitEvent(new LobbyStatusChangedEvent(Id, LobbyStatus.InProgress));
-        }
+        if (Context.Status == LobbyGameStateEnum.EndState)
+            EmitEvent(new LobbyStatusChangedEvent(Id, LobbyStatus.Closed));
     }
 
     private void InitContext(LobbySettings settings)

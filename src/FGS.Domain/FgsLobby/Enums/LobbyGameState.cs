@@ -5,5 +5,6 @@ public enum LobbyGameStateEnum
     Unknown,
     WaitPlayers,
     ReadyToInitialize,
-    GameWelcomeInformation
+    GameWelcomeInformation,
+    EndState
 }

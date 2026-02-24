@@ -5,4 +5,5 @@ public interface ILobbyContextRequest;
 public record AddPlayerRequest(Guid UserId) : ILobbyContextRequest;
 public record RemovePlayerRequest(Guid UserId) : ILobbyContextRequest;
 public record InitializeGameRequest : ILobbyContextRequest;
-public record SendUserValueRequest(Guid UserId, params string[] Values) : ILobbyContextRequest;
+public record SetUserChoicesRequest(Guid UserId, params string[] Choices) : ILobbyContextRequest;
+public record SetRandomUserChoicesRequest(Guid UserId) : ILobbyContextRequest;

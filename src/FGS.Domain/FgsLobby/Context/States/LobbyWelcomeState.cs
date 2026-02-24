@@ -26,12 +26,12 @@ public class LobbyWelcomeState : LobbyState
 
     public override void Handle(ILobbyContextRequest request)
     {
-        if (request is SendUserValueRequest userValueRequest)
+        if (request is SetUserChoicesRequest userValueRequest)
         {
             if (!IsPlayerExists(userValueRequest.UserId))
                 throw new LobbyStateException($"player with id = {userValueRequest.UserId} is not exist");
             
-            if (userValueRequest.Values.Length == 0)
+            if (userValueRequest.Choices.Length == 0)
                 _playerConfirmations.Remove(userValueRequest.UserId);
             else
                 _playerConfirmations.Add(userValueRequest.UserId);
