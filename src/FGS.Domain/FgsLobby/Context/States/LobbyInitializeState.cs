@@ -11,6 +11,14 @@ public class LobbyInitializeState : LobbyState
     }
 
     public override LobbyGameStateEnum GameState => LobbyGameStateEnum.ReadyToInitialize;
+    protected override void DoBotActions()
+    {
+        throw new NotImplementedException();
+    }
+    protected override string[] GetRandomPlayerChoice(Guid userId)
+    {
+        throw new NotImplementedException();
+    }
 
     public override void Handle(ILobbyContextRequest request)
     {

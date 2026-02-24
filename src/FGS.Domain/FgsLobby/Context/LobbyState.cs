@@ -32,7 +32,10 @@ public abstract class LobbyState
         LobbySettings = lobbySettings;
         _playersMap = playersMap;
     }
-    
+
+    protected abstract void DoBotActions();
+    protected abstract string[] GetRandomPlayerChoice(Guid userId);
+    protected bool IsPlayerExists(Guid userId) => _playersMap.ContainsKey(userId);
     protected Player GetPlayer(Guid playerId) => _playersMap[playerId];
     protected Player UpdatePlayer(Player player)
     {
@@ -46,6 +49,7 @@ public abstract class LobbyState
 
     protected IReadOnlyList<Player> Players()  => _playersMap.Values.OrderBy(x=> x.UserId).ToList().AsReadOnly();
     protected IReadOnlyList<Player> InnocentPlayers() => _playersMap.Values.Where(x=> x.Role == PlayerRole.Innocent).OrderBy(x=> x.UserId).ToList().AsReadOnly();
+    protected IReadOnlyList<Player> BotPlayers() => _playersMap.Values.Where(x => x.IsBot).OrderBy(x => x.UserId).ToList().AsReadOnly();
     protected Player GetRandomPlayer(IReadOnlyList<Player> players) => players[Random.Next(0, players.Count)];
 
     protected void InitRandom(int seed)

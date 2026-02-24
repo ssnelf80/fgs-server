@@ -14,6 +14,15 @@ public class LobbyWaitPlayerConnectionState : LobbyState
     }
 
     public override LobbyGameStateEnum GameState => LobbyGameStateEnum.WaitPlayers;
+    protected override void DoBotActions()
+    {
+        throw new NotImplementedException();
+    }
+
+    protected override string[] GetRandomPlayerChoice(Guid userId)
+    {
+        throw new NotImplementedException();
+    }
 
     public override void Handle(ILobbyContextRequest request)
     {
