@@ -1,13 +1,14 @@
-﻿using FGS.DAL.ViewModelRepository.Entities;
+﻿using FGS.DAL.ViewModel.Entities;
 using FGS.Domain.FgsLobby.Entities;
 using Microsoft.EntityFrameworkCore;
 
-namespace FGS.DAL.ViewModelRepository;
+namespace FGS.DAL.Context;
 
 public class FgsViewModelContext(DbContextOptions<FgsViewModelContext> options) : DbContext(options)
 {
     public DbSet<LobbyEntity> Lobbies { get; set; }
     public DbSet<EventSourceStreamTracker>  StreamTrackers { get; set; }
+    public DbSet<ConnectionTracker> UserConnections { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -24,5 +25,12 @@ public class FgsViewModelContext(DbContextOptions<FgsViewModelContext> options) 
         builder.Entity<EventSourceStreamTracker>()
             .ToTable("EventSourceStreamTracker")
             .HasKey(k => k.StreamTypeId);
+
+        builder.Entity<ConnectionTracker>()
+            .ToTable("ConnectionTracker")
+            .HasKey(x => x.UserId);
+
+        builder.Entity<ConnectionTracker>()
+            .HasIndex(x => x.LobbyId);
     }
 }

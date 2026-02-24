@@ -1,6 +1,5 @@
 ﻿using FGS.App;
 using FGS.App.Models;
-using FGS.DAL.EventSourceRepositories;
 using FGS.Domain.Base;
 using FGS.Domain.FgsLobby.Aggregate;
 using FGS.Domain.FgsLobby.Events;
@@ -8,7 +7,7 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
-namespace FGS.Test;
+namespace FGS.Test.Integration;
 
 public class LobbyStateTests : IClassFixture<WebApplicationFactory<Program>>
 {

@@ -2,7 +2,7 @@
 using FGS.Auth.Entities;
 using FGS.Auth.Managers;
 using FGS.Auth.Services;
-using FGS.DAL.ViewModelRepository;
+using FGS.DAL.Context;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 

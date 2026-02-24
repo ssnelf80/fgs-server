@@ -1,4 +1,4 @@
-﻿namespace FGS.DAL.ViewModelRepository.Entities;
+﻿namespace FGS.DAL.ViewModel.Entities;
 
 public record EventSourceStreamTracker(int StreamTypeId, ulong CommitPosition, ulong PreparePosition)
 {

@@ -1,17 +1,16 @@
 using System.Text.Json.Serialization;
 using EventStore.Client;
+using FGS.Adapters.ConnectionTracker;
 using FGS.Adapters.JsonConvert.Lobby;
 using FGS.App;
-using FGS.DAL;
 using FGS.DAL.BackgroundServices;
 using FGS.DAL.EventSourceRepositories;
-using FGS.DAL.ViewModelRepository;
+using FGS.DAL.ViewModel;
 using FGS.Domain.Base;
 using FGS.Domain.FgsLobby.Aggregate;
 using FGS.Domain.FgsLobby.Events;
 using FGS.Domain.Services;
 using FGS.Host.Extensions;
-using Microsoft.AspNetCore.Authentication.Cookies;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -48,6 +47,9 @@ builder.Services.AddScoped<IFgsViewModelRepository, FgsViewModelRepository>();
 
 // view model
 builder.AddViewModelContext();
+
+// adapters
+builder.Services.AddScoped<IConnectionTrackerService, ConnectionTrackerService>();
 
 //swagger
 builder.Services.AddEndpointsApiExplorer();

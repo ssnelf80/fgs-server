@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc.Testing;
 using Xunit;
 
-namespace FGS.Test;
+namespace FGS.Test.Fixtures;
 
 public class FullAppFixture : WebApplicationFactory<Program>, IAsyncLifetime
 {
