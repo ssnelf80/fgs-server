@@ -34,7 +34,8 @@ public abstract class LobbyState
     }
 
     /// <summary>
-    /// should be empty if state has not actions
+    /// Should be empty if the state has no actions!
+    /// When a user is assigned as a bot, this method is called
     /// </summary>
     protected virtual void DoBotActions()
     {
@@ -43,13 +44,12 @@ public abstract class LobbyState
     protected abstract string[] GetRandomPlayerChoice(Guid userId);
     protected bool IsPlayerExists(Guid userId) => _playersMap.ContainsKey(userId);
     protected Player GetPlayer(Guid playerId) => _playersMap[playerId];
-    protected Player UpdatePlayer(Player player)
+    protected void UpdatePlayer(Player player)
     {
         if (!_playersMap.ContainsKey(player.UserId))
             throw new InvalidOperationLobbyStateException("Player not found");
         
         _playersMap[player.UserId] = player;
-        return player;
     }
     protected Dictionary<Guid, Player> UnsafePlayerMap => _enableUnsafeContext 
         ? _playersMap : throw new InvalidInnerCallLobbyStateException(nameof(UnsafePlayerMap));
@@ -70,6 +70,31 @@ public abstract class LobbyState
 
     public virtual void Handle(ILobbyContextRequest request)
     {
-        throw new InvalidOperationLobbyStateException(request.GetType().Name);
+        switch (request)
+        {
+            case SetBotToPlayerRequest requestSetBotToPlayer when !IsPlayerExists(requestSetBotToPlayer.UserId):
+                throw new InvalidOperationLobbyStateException("Player not found");
+            case SetBotToPlayerRequest requestSetBotToPlayer when GetPlayer(requestSetBotToPlayer.UserId).IsBot:
+                throw new InvalidOperationLobbyStateException("Player is bot already");
+            case SetBotToPlayerRequest requestSetBotToPlayer:
+            {
+                var player = GetPlayer(requestSetBotToPlayer.UserId) with { IsBot = true };
+                UpdatePlayer(player);
+                DoBotActions();
+                return;
+            }
+            case RemoveBotFromPlayerRequest requestRemoveBotFromPlayer when !IsPlayerExists(requestRemoveBotFromPlayer.UserId):
+                throw new InvalidOperationLobbyStateException("Player not found");
+            case RemoveBotFromPlayerRequest requestRemoveBotFromPlayer when !GetPlayer(requestRemoveBotFromPlayer.UserId).IsBot:
+                throw new InvalidOperationLobbyStateException("Player is not a bot");
+            case RemoveBotFromPlayerRequest requestRemoveBotFromPlayer:
+            {
+                var player = GetPlayer(requestRemoveBotFromPlayer.UserId) with { IsBot = false };
+                UpdatePlayer(player);
+                return;
+            }
+            default:
+                throw new InvalidOperationLobbyStateException(request.GetType().Name);
+        }
     }
 }

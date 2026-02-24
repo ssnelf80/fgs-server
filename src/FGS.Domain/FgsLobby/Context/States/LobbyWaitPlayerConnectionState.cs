@@ -25,7 +25,7 @@ public class LobbyWaitPlayerConnectionState : LobbyState
         switch (request)
         {
             case AddPlayerRequest addPlayerRequest:
-                AddPlayer(addPlayerRequest.UserId);
+                AddPlayer(addPlayerRequest.UserId, addPlayerRequest.IsBot);
                 return;
             case RemovePlayerRequest removePlayerRequest:
                 RemovePlayer(removePlayerRequest.UserId);
@@ -35,13 +35,13 @@ public class LobbyWaitPlayerConnectionState : LobbyState
                 break;
         }
     }
-    
-    private void AddPlayer(Guid userId)
+
+    private void AddPlayer(Guid userId, bool isBot = false)
     {
         if (UnsafePlayerMap.ContainsKey(userId))
             throw new LobbyStateException($"Игрок с ID : {userId} уже существует");
 
-        UnsafePlayerMap.Add(userId, new Player(userId, 0, PlayerRole.Unknown, false));
+        UnsafePlayerMap.Add(userId, new Player(userId, 0, PlayerRole.Unknown, isBot));
 
         if (UnsafePlayerMap.Count == LobbySettings.PlayersCount)
         {

@@ -33,5 +33,43 @@ public sealed partial class Lobby
             lobby.Context.SendRequest(new RemovePlayerRequest(e.UserId));
             return true;
         }
+
+        public bool Visit(LobbySetUserChoiceEvent e, CancellationToken ct = default)
+        {
+            lobby.Context.SendRequest(new SetUserChoicesRequest(e.UserId, e.Choices));
+            return true;
+        }
+
+        public bool Visit(LobbySetUserRandomChoiceEvent e, CancellationToken ct = default)
+        {
+            lobby.Context.SendRequest(new SetRandomUserChoicesRequest(e.UserId));
+            return true;
+        }
+
+        public bool Visit(BotConnectedLobbyEvent e, CancellationToken ct = default)
+        {
+            lobby.Context.SendRequest(new AddPlayerRequest(e.BotId, true));
+            if (lobby.Context.Status == LobbyGameStateEnum.ReadyToInitialize)
+                lobby.Context.SendRequest(new InitializeGameRequest());
+            return true;
+        }
+
+        public bool Visit(BotDisconnectedLobbyEvent e, CancellationToken ct = default)
+        {
+            lobby.Context.SendRequest(new RemovePlayerRequest(e.BotId));
+            return true;
+        }
+
+        public bool Visit(SetBotToPlayerLobbyEvent e, CancellationToken ct = default)
+        {
+            lobby.Context.SendRequest(new SetBotToPlayerRequest(e.UserId));
+            return true;
+        }
+
+        public bool Visit(RemoveBotFromPlayerLobbyEvent e, CancellationToken ct = default)
+        {
+            lobby.Context.SendRequest(new RemoveBotFromPlayerRequest(e.UserId));
+            return true;
+        }
     }
 }

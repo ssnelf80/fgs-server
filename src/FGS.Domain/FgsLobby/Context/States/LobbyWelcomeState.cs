@@ -4,15 +4,13 @@ using FGS.Domain.FgsLobby.Exceptions;
 
 namespace FGS.Domain.FgsLobby.Context.States;
 
-public class LobbyWelcomeState : LobbyState
+public sealed class LobbyWelcomeState : LobbyState
 {
     public override LobbyGameStateEnum GameState => LobbyGameStateEnum.GameWelcomeInformation;
-    protected sealed override void DoBotActions()
+    protected override void DoBotActions()
     {
-        foreach (var bot in BotPlayers())
-        {
+        foreach (var bot in BotPlayers()) 
             _playerConfirmations.Add(bot.UserId);
-        }
     }
 
     protected override string[] GetRandomPlayerChoice(Guid userId) => [string.Empty];
@@ -26,34 +24,32 @@ public class LobbyWelcomeState : LobbyState
 
     public override void Handle(ILobbyContextRequest request)
     {
-        if (request is SetUserChoicesRequest userChoiceRequest)
+        switch (request)
         {
-            if (!IsPlayerExists(userChoiceRequest.UserId))
+            case SetUserChoicesRequest userChoiceRequest when !IsPlayerExists(userChoiceRequest.UserId):
                 throw new LobbyStateException($"player with id = {userChoiceRequest.UserId} is not exist");
+            case SetUserChoicesRequest userChoiceRequest:
+            {
+                if (userChoiceRequest.Choices.Length == 0)
+                    _playerConfirmations.Remove(userChoiceRequest.UserId);
+                else
+                    _playerConfirmations.Add(userChoiceRequest.UserId);
             
-            if (userChoiceRequest.Choices.Length == 0)
-                _playerConfirmations.Remove(userChoiceRequest.UserId);
-            else
-                _playerConfirmations.Add(userChoiceRequest.UserId);
+                // todo next transition
             
-            // todo next transition
-            
-            return;
-        }
-        
-        if (request is SetRandomUserChoicesRequest randomChoiceRequest)
-        {
-            if (!IsPlayerExists(randomChoiceRequest.UserId))
+                return;
+            }
+            case SetRandomUserChoicesRequest randomChoiceRequest when !IsPlayerExists(randomChoiceRequest.UserId):
                 throw new LobbyStateException($"player with id = {randomChoiceRequest.UserId} is not exist");
-            if (!GetPlayer(randomChoiceRequest.UserId).IsBot)
-                throw new LobbyStateException($"player with id = {randomChoiceRequest.UserId} is not a bot");
+            case SetRandomUserChoicesRequest randomChoiceRequest:
+                _playerConfirmations.Add(randomChoiceRequest.UserId);
             
-            _playerConfirmations.Add(randomChoiceRequest.UserId);
+                // todo next transition
             
-            // todo next transition
-            
-            return;
+                return;
+            default:
+                base.Handle(request);
+                break;
         }
-        base.Handle(request);
     }
 }
