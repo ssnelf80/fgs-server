@@ -47,6 +47,6 @@ public class LobbyController(SignInManager<FgsUser> signInManager, LobbyAppServi
     public async Task CreateLobbyAsync(Guid lobbyId, CancellationToken ct)
     {
         var user = await signInManager.UserManager.GetUserAsync(User);
-        await lobbyAppService.ConnectToLobbyAsync(lobbyId, Guid.Parse(user!.Id), ct);
+        await lobbyAppService.ConnectUserToLobbyAsync(lobbyId, Guid.Parse(user!.Id), ct);
     }
 }

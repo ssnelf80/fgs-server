@@ -34,17 +34,18 @@ public class FgsViewModelRepository(
         CancellationToken cancellationToken) =>
         TransactionWrapperAsync(async () =>
         {
-            if (!await Context.StreamTrackers
+            await using var shortLifeContext = Context.CreateDbContext();
+            if (!await shortLifeContext.StreamTrackers
                     .AnyAsync(x 
                         => x.StreamTypeId == (int)EventSourceStreamTracker.StreamType.Lobby, cancellationToken))
             {
-                await Context.StreamTrackers
+                await shortLifeContext.StreamTrackers
                     .AddAsync(new EventSourceStreamTracker((int)EventSourceStreamTracker.StreamType.Lobby, commitPosition, preparePosition), cancellationToken);
-                await Context.SaveChangesAsync(cancellationToken);
+                await shortLifeContext.SaveChangesAsync(cancellationToken);
                 return;
             }
 
-            await Context.StreamTrackers
+            await shortLifeContext.StreamTrackers
                 .Where(x => x.StreamTypeId == (int)EventSourceStreamTracker.StreamType.Lobby)
                 .ExecuteUpdateAsync(x =>
                     x.SetProperty(p => p.PreparePosition, preparePosition)
@@ -56,14 +57,15 @@ public class FgsViewModelRepository(
         var result = true;
         await TransactionWrapperAsync(async () =>
         {
-            if (Context.Lobbies.Any(x => x.Id == e.LobbyId))
+            await using var shortLifeContext = Context.CreateDbContext();
+            if (shortLifeContext.Lobbies.Any(x => x.Id == e.LobbyId))
             {
                 Logger.LogWarning($"Lobby with id {e.LobbyId} has already been created");
                 result = false;
                 return;
             }
 
-            await Context.Lobbies.AddAsync(new LobbyEntity(
+            await shortLifeContext.Lobbies.AddAsync(new LobbyEntity(
                 e.LobbyId,
                 e.Name,
                 e.MasterUserId,
@@ -73,7 +75,7 @@ public class FgsViewModelRepository(
                 e.CreatedAt,
                 DateTimeOffset.UtcNow
             ), ct);
-            await Context.SaveChangesAsync(ct);
+            await shortLifeContext.SaveChangesAsync(ct);
         }, ct);
         return result;
     }
@@ -83,7 +85,8 @@ public class FgsViewModelRepository(
         var result = true;
         await TransactionWrapperAsync(async () =>
         {
-            var query = Context.Lobbies.Where(x => x.Id == e.LobbyId);
+            await using var shortLifeContext = Context.CreateDbContext();
+            var query = shortLifeContext.Lobbies.Where(x => x.Id == e.LobbyId);
             var lobby = await query.FirstOrDefaultAsync(ct);
             if (lobby == null)
             {
@@ -104,7 +107,8 @@ public class FgsViewModelRepository(
         var result = true;
         await TransactionWrapperAsync(async () =>
         {
-            var query = Context.Lobbies.Where(x => x.Id == e.LobbyId);
+            await using var shortLifeContext = Context.CreateDbContext();
+            var query = shortLifeContext.Lobbies.Where(x => x.Id == e.LobbyId);
             var lobby = await query.FirstOrDefaultAsync(ct);
             if (lobby == null)
             {
@@ -126,7 +130,8 @@ public class FgsViewModelRepository(
         var result = true;
         await TransactionWrapperAsync(async () =>
         {
-            var query = Context.Lobbies.Where(x => x.Id == e.LobbyId);
+            await using var shortLifeContext = Context.CreateDbContext();
+            var query = shortLifeContext.Lobbies.Where(x => x.Id == e.LobbyId);
             var lobby = await query.FirstOrDefaultAsync(ct);
             if (lobby == null)
             {

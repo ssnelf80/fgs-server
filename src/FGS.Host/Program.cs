@@ -43,10 +43,12 @@ builder.Services.AddHostedService<EventStoreBackgroundService>();
 // app
 builder.Services.AddScoped<LobbyAppService>();
 builder.Services.AddSingleton<ILobbyEventJsonConvert, LobbyEventJsonConvert>();
-builder.Services.AddScoped<IFgsViewModelRepository, FgsViewModelRepository>();
 
-// view model
+
+// view model repo
 builder.AddViewModelContext();
+builder.Services.AddScoped<IFgsViewModelRepository, FgsViewModelRepository>();
+builder.Services.AddScoped<ConnectionTrackerRepository>();
 
 // adapters
 builder.Services.AddScoped<IConnectionTrackerService, ConnectionTrackerService>();

@@ -2,7 +2,6 @@
 using FGS.Domain.FgsLobby.Context.States;
 using FGS.Domain.FgsLobby.Entities;
 using FGS.Domain.FgsLobby.Enums;
-using FGS.Domain.FgsLobby.Exceptions;
 
 namespace FGS.Domain.FgsLobby.Context;
 

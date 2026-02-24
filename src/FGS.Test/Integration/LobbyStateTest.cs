@@ -32,8 +32,14 @@ public class LobbyStateTests : IClassFixture<WebApplicationFactory<Program>>
        var lobbyId = await lobbyAppService.CreateLobbyAsync(new CreateLobbyRequest(masterUser, "test"), 
            ct);
 
-       await lobbyAppService.ConnectToLobbyAsync(lobbyId, user1, ct);
-       await lobbyAppService.ConnectToLobbyAsync(lobbyId, user2, ct);
+       await lobbyAppService.ConnectUserToLobbyAsync(lobbyId, user1, ct);
+       await lobbyAppService.DisconnectUserFromLobbyAsync(lobbyId, user1, ct);
+       await lobbyAppService.ConnectUserToLobbyAsync(lobbyId, user1, ct);
+       await lobbyAppService.DisconnectUserFromLobbyAsync(lobbyId, user1, ct);
+       await lobbyAppService.ConnectUserToLobbyAsync(lobbyId, user1, ct);
+       
+       // connect 2
+       await lobbyAppService.ConnectUserToLobbyAsync(lobbyId, user2, ct);
        var lobby = await lobbyRepository.GetAsync(lobbyId, ct);
        Assert.True(true);
     }

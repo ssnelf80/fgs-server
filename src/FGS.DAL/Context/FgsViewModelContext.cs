@@ -8,11 +8,15 @@ public class FgsViewModelContext(DbContextOptions<FgsViewModelContext> options) 
 {
     public DbSet<LobbyEntity> Lobbies { get; set; }
     public DbSet<EventSourceStreamTracker>  StreamTrackers { get; set; }
-    public DbSet<ConnectionTracker> UserConnections { get; set; }
+    public DbSet<ConnectionTrackerEntity> UserConnections { get; set; }
+
+    public FgsViewModelContext CreateDbContext() => new (options);
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        optionsBuilder.UseNpgsql();
+        optionsBuilder
+            .UseNpgsql()
+            .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
     }
     
     protected override void OnModelCreating(ModelBuilder builder)
@@ -26,11 +30,11 @@ public class FgsViewModelContext(DbContextOptions<FgsViewModelContext> options) 
             .ToTable("EventSourceStreamTracker")
             .HasKey(k => k.StreamTypeId);
 
-        builder.Entity<ConnectionTracker>()
+        builder.Entity<ConnectionTrackerEntity>()
             .ToTable("ConnectionTracker")
             .HasKey(x => x.UserId);
 
-        builder.Entity<ConnectionTracker>()
+        builder.Entity<ConnectionTrackerEntity>()
             .HasIndex(x => x.LobbyId);
     }
 }

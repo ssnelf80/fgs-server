@@ -5,18 +5,12 @@ using Microsoft.Extensions.Logging;
 
 namespace FGS.DAL.ViewModel;
 
-public abstract class ViewModelRepositoryBase
+public abstract class ViewModelRepositoryBase(FgsViewModelContext db, ILogger logger)
 {
-    protected readonly FgsViewModelContext Context;
-    protected readonly ILogger Logger;
+    protected readonly FgsViewModelContext Context = db;
+    protected readonly ILogger Logger = logger;
 
-    protected ViewModelRepositoryBase(FgsViewModelContext db, ILogger logger)
-    {       
-        Logger = logger;
-        Context = db;
-    }
-
-    public async Task TransactionWrapperAsync(Func<Task> action, CancellationToken ct)
+    protected async Task TransactionWrapperAsync(Func<Task> action, CancellationToken ct)
     {
         // todo возможно хватит и repeatable read
         await using var transaction = await Context.Database.BeginTransactionAsync(IsolationLevel.Serializable, ct);
