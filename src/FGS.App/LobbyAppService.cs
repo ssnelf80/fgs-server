@@ -26,6 +26,33 @@ public class LobbyAppService(
         CancellationToken ct) =>
         fgsViewModelRepository.GetLobbyEntitiesListAsync(searchFilter, ct);
 
+    public async Task SendUserChoiceToLobbyAsync(Guid lobbyId, Guid userId, string[] values,
+        CancellationToken ct)
+    {
+        var lobby = await lobbyRepository.GetAsync(lobbyId, ct);
+        lobby.SetUserChoice(userId, values);
+        await lobbyRepository.SaveAsync(lobby, ct);
+    }
+    
+    public async Task SendRandomUserChoiceToLobbyAsync(Guid lobbyId, Guid userId, CancellationToken ct)
+    {
+        var lobby = await lobbyRepository.GetAsync(lobbyId, ct);
+        lobby.SetRandomUserChoice(userId);
+        await lobbyRepository.SaveAsync(lobby, ct);
+    }
+
+    public async Task ConnectBotToLobbyAsync(Guid lobbyId, CancellationToken ct)
+    {
+        var lobby = await lobbyRepository.GetAsync(lobbyId, ct);
+        lobby.ConnectBot(Guid.NewGuid()); // todo список ботов
+        await lobbyRepository.SaveAsync(lobby, ct);
+    }
+    
+    public async Task DisconnectBotFromLobbyAsync(Guid lobbyId, Guid botId, CancellationToken ct)
+    {
+        throw new  NotImplementedException();
+    }
+
     public async Task ConnectUserToLobbyAsync(Guid lobbyId, Guid userId, CancellationToken ct)
     {
         await connectionTrackerService.ConnectAsync(new ConnectionTrackerEntity(userId, lobbyId, LobbyUserRole.Player), ct);

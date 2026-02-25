@@ -37,10 +37,19 @@ public class LobbyStateTests : IClassFixture<WebApplicationFactory<Program>>
        await lobbyAppService.ConnectUserToLobbyAsync(lobbyId, user1, ct);
        await lobbyAppService.DisconnectUserFromLobbyAsync(lobbyId, user1, ct);
        await lobbyAppService.ConnectUserToLobbyAsync(lobbyId, user1, ct);
-       
        // connect 2
        await lobbyAppService.ConnectUserToLobbyAsync(lobbyId, user2, ct);
+       
+       // connect bot
+       await lobbyAppService.ConnectBotToLobbyAsync(lobbyId, ct);
+       await lobbyAppService.ConnectBotToLobbyAsync(lobbyId, ct);
        var lobby = await lobbyRepository.GetAsync(lobbyId, ct);
+      
+       // подтверждение начала игры
+       await lobbyAppService.SendUserChoiceToLobbyAsync(lobbyId, user1, ["y"], ct);
+       await lobbyAppService.SendRandomUserChoiceToLobbyAsync(lobbyId, user2, ct);
+       
+       lobby = await lobbyRepository.GetAsync(lobbyId, ct);
        Assert.True(true);
     }
 }

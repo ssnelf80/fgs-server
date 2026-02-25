@@ -67,9 +67,9 @@ public sealed partial class Lobby : AggregateRoot<LobbyEvent>
             EmitEvent(new LobbyStatusChangedEvent(Id, LobbyStatus.Closed));
     }
     
-    public void ConnectBot(Guid userId)
+    public void ConnectBot(Guid botId)
     {
-        EmitEvent(new PlayerConnectedLobbyEvent(Id, userId, true));
+        EmitEvent(new PlayerConnectedLobbyEvent(Id, botId, true));
         
         if (Context.Status != LobbyGameStateEnum.WaitPlayers)
             EmitEvent(new LobbyStatusChangedEvent(Id, LobbyStatus.InProgress));

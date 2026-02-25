@@ -18,6 +18,14 @@ public static class LobbyEventExtension
                 resolvedEvent.Event.Data.Span),
             nameof(LobbyStatusChangedEvent) => JsonSerializer.Deserialize<LobbyStatusChangedEvent>(resolvedEvent
                 .Event.Data.Span),
+            nameof(LobbySetUserChoiceEvent) => JsonSerializer.Deserialize<LobbySetUserChoiceEvent>(resolvedEvent
+                .Event.Data.Span),
+            nameof(LobbySetUserRandomChoiceEvent) => JsonSerializer.Deserialize<LobbySetUserRandomChoiceEvent>(resolvedEvent
+                .Event.Data.Span),
+            nameof(SetBotToPlayerLobbyEvent) => JsonSerializer.Deserialize<SetBotToPlayerLobbyEvent>(resolvedEvent
+                .Event.Data.Span),
+            nameof(RemoveBotFromPlayerLobbyEvent) => JsonSerializer.Deserialize<RemoveBotFromPlayerLobbyEvent>(resolvedEvent
+                .Event.Data.Span),
             _ => null
         };
     }
