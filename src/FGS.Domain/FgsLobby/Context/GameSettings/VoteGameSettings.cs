@@ -1,4 +1,5 @@
-﻿using FGS.Domain.FgsLobby.Enums;
+﻿using FGS.Domain.FgsLobby.Entities;
+using FGS.Domain.FgsLobby.Enums;
 
 namespace FGS.Domain.FgsLobby.Context.GameSettings;
 
@@ -13,8 +14,7 @@ public record VoteGameSettings
         MultipleWinner = false,
         WinnerReward = new WinnerReward
         {
-            BalanceChangingType = BalanceOperationType.Addition,
-            BalanceChangingValue = 25_000
+           BalanceOperation = new BalanceOperation(BalanceOperationType.Addition, 25_000)
         },
         IndividualDescription = null,
         RandomIndividualVoteGameSettings = []

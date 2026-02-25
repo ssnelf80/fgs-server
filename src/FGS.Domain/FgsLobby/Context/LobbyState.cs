@@ -85,6 +85,8 @@ public abstract class LobbyState
 
     protected void ChangeBalance(Guid userId, BalanceOperation balanceOperation)
     {
+        if (balanceOperation.Type == BalanceOperationType.NoAction)
+            return;
         if (balanceOperation is { Type: BalanceOperationType.Division, Value: 0 })
             throw new InvalidOperationLobbyStateException("Cannot change balance. division by 0");
         var player = GetPlayer(userId);

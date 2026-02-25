@@ -27,8 +27,7 @@ public record LobbySettings
                         IndividualDescription = null,
                         WinnerReward = new WinnerReward
                         {
-                            BalanceChangingType = BalanceOperationType.Addition,
-                            BalanceChangingValue = 25_000
+                            BalanceOperation = new BalanceOperation(BalanceOperationType.Addition, 25_000)
                         },
                         RandomIndividualVoteGameSettings =
                         [

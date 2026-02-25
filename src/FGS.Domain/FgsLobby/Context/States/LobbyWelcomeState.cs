@@ -35,7 +35,7 @@ public sealed class LobbyWelcomeState : LobbyState
                 else
                     _playerConfirmations.Add(userChoiceRequest.UserId);
 
-                GoToNextGameIfNeeded()
+                GoToNextGameIfNeeded();
                 return;
             }
             case SetRandomUserChoicesRequest randomChoiceRequest when !IsPlayerExists(randomChoiceRequest.UserId):
@@ -43,7 +43,7 @@ public sealed class LobbyWelcomeState : LobbyState
             case SetRandomUserChoicesRequest randomChoiceRequest:
                 _playerConfirmations.Add(randomChoiceRequest.UserId);
 
-                GoToNextGameIfNeeded()
+                GoToNextGameIfNeeded();
                 return;
             default:
                 base.Handle(request);

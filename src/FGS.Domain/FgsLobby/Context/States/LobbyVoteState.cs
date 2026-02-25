@@ -1,6 +1,8 @@
 ﻿using FGS.Domain.FgsLobby.Context.GameSettings;
+using FGS.Domain.FgsLobby.Context.Requests;
 using FGS.Domain.FgsLobby.Entities;
 using FGS.Domain.FgsLobby.Enums;
+using FGS.Domain.FgsLobby.Exceptions;
 
 namespace FGS.Domain.FgsLobby.Context.States;
 
@@ -12,7 +14,7 @@ public sealed class LobbyVoteState : LobbyState
         ShowResult
     }
 
-    private VoteStatus CurrentVoteStatus = VoteStatus.Vote;
+    private VoteStatus _currentVoteStatus = VoteStatus.Vote;
     private const string SkipVariant = "SKIP";
     private readonly VoteGameSettings _globalSettings;
     private Dictionary<Guid, VoteGameSettings> _userVoteGameSettingsMap = [];
@@ -31,20 +33,97 @@ public sealed class LobbyVoteState : LobbyState
     public override LobbyGameStateEnum GameState => LobbyGameStateEnum.InGame;
     public LobbyGameType GameType => LobbyGameType.Vote;
 
+    public override void Handle(ILobbyContextRequest request)
+    {
+        switch (request)
+        {
+            case SetUserChoicesRequest { Choices.Length: 0 } userChoicesRequest:
+                _userChoicesMap.Remove(userChoicesRequest.UserId);
+                return;
+            case SetUserChoicesRequest userChoicesRequest 
+                when !userChoicesRequest.Choices.All(x => GetUserChoices(userChoicesRequest.UserId).Contains(x)):
+                throw new InvalidOperationLobbyStateException("Invalid user choice");
+            case SetUserChoicesRequest userChoicesRequest 
+                when !_userVoteGameSettingsMap[userChoicesRequest.UserId].MultiplyChoice && userChoicesRequest.Choices.Length != 1:
+                throw new InvalidOperationLobbyStateException("User not support multiply choices");
+            case SetUserChoicesRequest userChoicesRequest:
+                _userChoicesMap[userChoicesRequest.UserId] = userChoicesRequest.Choices;
+                if (CanSetResult())
+                    SetResult();
+                break;
+            case SetRandomUserChoicesRequest rndUserChoicesRequest:
+                _userChoicesMap[rndUserChoicesRequest.UserId] = GetUserRandomChoices(rndUserChoicesRequest.UserId);
+                if (CanSetResult())
+                    SetResult();
+                break;
+            default:
+                base.Handle(request);
+                break;
+        }
+    }
+
     protected override void DoBotActions()
     {
         foreach (var player in BotPlayers())
         {
-            if (CurrentVoteStatus == VoteStatus.Vote)
+            if (_currentVoteStatus == VoteStatus.Vote)
             {
                 _userChoicesMap.Add(player.UserId, GetUserRandomChoices(player.UserId));
-                throw new NotImplementedException(); // todo повторный вызов подтверждения, если нужно
             }
-            else if (CurrentVoteStatus == VoteStatus.ShowResult)
+            else if (_currentVoteStatus == VoteStatus.ShowResult)
             {
                 _playerConfirmations.Add(player.UserId);
             }
         }
+        
+        if (CanSetResult())
+        {
+            SetResult();
+            DoBotActions();
+        }
+
+        GoToNextGameIfNeeded();
+    }
+
+    private bool CanSetResult() => _currentVoteStatus == VoteStatus.Vote && _userChoicesMap.Count == Players().Count;
+
+    private void SetResult()
+    {
+        if (!CanSetResult())
+            throw new InvalidOperationLobbyStateException(
+                $"can't set result: {_currentVoteStatus} and {_userChoicesMap.Count}/{Players().Count}");
+
+        var choicesCount = Players().ToDictionary(x => x.UserId, _ => 0);
+        foreach (var choice in _userChoicesMap.Values.SelectMany(x => x))
+        {
+            if (choice == SkipVariant)
+                continue;
+            choicesCount[Guid.Parse(choice)]++;
+        }
+
+        var maxValue = choicesCount.Values.Max();
+        var winnersIds = choicesCount
+            .Where(x => x.Value == maxValue)
+            .Select(x => x.Key)
+            .ToList();
+        try
+        {
+            if (choicesCount[winnersIds[0]] == 0) // у победителя ноль голосов
+                return;
+            if (!_globalSettings.MultipleWinner && winnersIds.Count > 1) // несколько победителей
+                return;
+            ApplyWinnerReward(winnersIds);
+        }
+        finally
+        {
+            _currentVoteStatus = VoteStatus.ShowResult;
+        }
+    }
+
+    private void ApplyWinnerReward(IReadOnlyList<Guid> winnersIds)
+    {
+        foreach (var winnerId in winnersIds)
+            ChangeBalance(winnerId, _userVoteGameSettingsMap[winnerId].WinnerReward.BalanceOperation);
     }
 
     private void InitUserGameSettings(VoteGameSettings settings)
@@ -72,7 +151,7 @@ public sealed class LobbyVoteState : LobbyState
             .OrderBy(x => x.UserId)
             .ToList());
 
-    private IReadOnlyList<string> GetUserVariants(Guid userId)
+    private IReadOnlyList<string> GetUserChoices(Guid userId)
     {
         List<string> variants = [];
         var settings = _userVoteGameSettingsMap[userId];
@@ -91,7 +170,7 @@ public sealed class LobbyVoteState : LobbyState
     private IReadOnlyList<string> GetUserRandomChoices(Guid userId)
     {
         List<string> result = [];
-        var variants = GetUserVariants(userId);
+        var variants = GetUserChoices(userId);
         if (!_userVoteGameSettingsMap[userId].MultiplyChoice)
         {
             result.Add(variants[Random.Next(0, variants.Count)]);
@@ -114,7 +193,7 @@ public sealed class LobbyVoteState : LobbyState
     
     private void GoToNextGameIfNeeded()
     {
-        if (_playerConfirmations.Count == Players().Count)
+        if (_playerConfirmations.Count == Players().Count && _currentVoteStatus == VoteStatus.ShowResult)
             Context.TransitionTo(GetNextGameState());
     }
 }
