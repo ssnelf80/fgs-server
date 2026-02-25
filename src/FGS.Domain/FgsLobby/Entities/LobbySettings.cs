@@ -5,36 +5,40 @@ namespace FGS.Domain.FgsLobby.Entities;
 
 public record LobbySettings
 {
-    public static LobbySettings Default => new()
-    {
-        PlayersCount = 2, // todo на нужный вариант, пока для теста
-        TraitorsCount = 1,
-        StartBalance = 100_000,
-        RandomizerSeed = Environment.TickCount,
-        WelcomeMessage = "Welcome to FGS!",
-        GamesSettings = [
-            new GameSettingsWrapper
-            {
-                LobbyGameType = LobbyGameType.Vote,
-                VoteGameSettings = new VoteGameSettings
+    public static LobbySettings Default =>
+        new()
+        {
+            PlayersCount = 4,
+            TraitorsCount = 1,
+            StartBalance = 100_000,
+            RandomizerSeed = Environment.TickCount,
+            WelcomeMessage = "Welcome to FGS!",
+            GamesSettings =
+            [
+                new GameSettingsWrapper
                 {
-                    CanSkip = false,
-                    CanSelfChoice = false,
-                    MultiplyChoice = false,
-                    MultipleWinner = false,
-                    WinnerReward = new WinnerReward
+                    LobbyGameType = LobbyGameType.Vote,
+                    VoteGameSettings = new VoteGameSettings
                     {
-                        BalanceChangingType = BalanceOperationType.Addition,
-                        BalanceChangingValue = 25_000
-                    },
-                    RandomIndividualVoteGameSettings =
-                    [
-                    ],
-                    GameDescription = "Голосование описание ляляляля"
+                        CanSkip = true,
+                        CanSelfChoice = false,
+                        MultiplyChoice = false,
+                        MultipleWinner = false,
+                        IndividualDescription = null,
+                        WinnerReward = new WinnerReward
+                        {
+                            BalanceChangingType = BalanceOperationType.Addition,
+                            BalanceChangingValue = 25_000
+                        },
+                        RandomIndividualVoteGameSettings =
+                        [
+                            VoteGameSettings.Default with { MultiplyChoice = true}
+                        ],
+                        GameDescription = "Голосование описание ляляляля"
+                    }
                 }
-            }
-        ]
-    };
+            ]
+        };
 
     public required uint PlayersCount { get; init; }
     public required uint TraitorsCount { get; init; }

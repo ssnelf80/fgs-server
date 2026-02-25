@@ -83,6 +83,32 @@ public abstract class LobbyState
         return new LobbyEndState(this);
     }
 
+    protected void ChangeBalance(Guid userId, BalanceOperation balanceOperation)
+    {
+        if (balanceOperation is { Type: BalanceOperationType.Division, Value: 0 })
+            throw new InvalidOperationLobbyStateException("Cannot change balance. division by 0");
+        var player = GetPlayer(userId);
+        switch (balanceOperation.Type)
+        {
+            case BalanceOperationType.Addition:
+                UpdatePlayer(player with { Balance = (long)(player.Balance + balanceOperation.Value) });
+                break;
+            case BalanceOperationType.Subtraction:
+                UpdatePlayer(player with { Balance = (long)(player.Balance - balanceOperation.Value) });
+                break;
+            case BalanceOperationType.Multiplication:
+                UpdatePlayer(player with { Balance = (long)(player.Balance * balanceOperation.Value) });
+                break;
+            case BalanceOperationType.Division:
+                UpdatePlayer(player with { Balance = (long)(player.Balance / balanceOperation.Value) });
+                break;
+            default:
+                throw new InvalidOperationLobbyStateException($"Balance operation type {balanceOperation.Type} not supported");
+        }
+        if (GetPlayer(userId).Balance < 0)
+            UpdatePlayer(player with { Balance = 0 });
+    }
+
     protected void InitRandom(int seed)
     {
         if (_rnd is not null)

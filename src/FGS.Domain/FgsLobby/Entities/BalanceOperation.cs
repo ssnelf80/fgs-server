@@ -2,4 +2,4 @@
 
 namespace FGS.Domain.FgsLobby.Entities;
 
-public record BalanceOperation(BalanceOperationType Type, ulong Value);
+public record BalanceOperation(BalanceOperationType Type, decimal Value);

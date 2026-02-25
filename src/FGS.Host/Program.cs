@@ -14,6 +14,20 @@ using FGS.Host.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// cors временно
+const string CorsPolicyName = "AllowDebugOrigin";
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(CorsPolicyName,
+        policy =>
+        {
+            policy.WithOrigins("http://localhost:3000") // Allows debug
+                .AllowAnyHeader()  // Allows all headers
+                .AllowAnyMethod() // Allows all methods (GET, POST, PUT, DELETE, etc.)
+                .AllowCredentials(); 
+        });
+});
+
 builder.AddAuthContext();
 
 builder.Services.ConfigureApplicationCookie(options =>
@@ -57,12 +71,14 @@ builder.Services.AddScoped<IConnectionTrackerService, ConnectionTrackerService>(
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 
 app.UseHttpsRedirection();
-
+app.UseCors(CorsPolicyName);
 app.UseAuthorization();
 
 app.MapControllers();
@@ -76,6 +92,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+
 
 app.Run();
 

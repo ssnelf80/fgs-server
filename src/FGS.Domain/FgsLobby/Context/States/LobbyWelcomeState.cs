@@ -7,9 +7,10 @@ namespace FGS.Domain.FgsLobby.Context.States;
 public sealed class LobbyWelcomeState : LobbyState
 {
     public override LobbyGameStateEnum GameState => LobbyGameStateEnum.GameWelcomeInformation;
+
     protected override void DoBotActions()
     {
-        foreach (var bot in BotPlayers()) 
+        foreach (var bot in BotPlayers())
             _playerConfirmations.Add(bot.UserId);
     }
 
@@ -18,6 +19,7 @@ public sealed class LobbyWelcomeState : LobbyState
     public LobbyWelcomeState(LobbyState other) : base(other)
     {
         DoBotActions();
+        GoToNextGameIfNeeded();
     }
 
     public override void Handle(ILobbyContextRequest request)
@@ -32,20 +34,26 @@ public sealed class LobbyWelcomeState : LobbyState
                     _playerConfirmations.Remove(userChoiceRequest.UserId);
                 else
                     _playerConfirmations.Add(userChoiceRequest.UserId);
-                
-                Context.TransitionTo(GetNextGameState());
+
+                GoToNextGameIfNeeded()
                 return;
             }
             case SetRandomUserChoicesRequest randomChoiceRequest when !IsPlayerExists(randomChoiceRequest.UserId):
                 throw new LobbyStateException($"player with id = {randomChoiceRequest.UserId} is not exist");
             case SetRandomUserChoicesRequest randomChoiceRequest:
                 _playerConfirmations.Add(randomChoiceRequest.UserId);
-            
-                Context.TransitionTo(GetNextGameState());
+
+                GoToNextGameIfNeeded()
                 return;
             default:
                 base.Handle(request);
                 break;
         }
+    }
+
+    private void GoToNextGameIfNeeded()
+    {
+        if (_playerConfirmations.Count == Players().Count)
+            Context.TransitionTo(GetNextGameState());
     }
 }
