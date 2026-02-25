@@ -37,24 +37,55 @@ public sealed class LobbyVoteState : LobbyState
     {
         switch (request)
         {
+            case SetUserChoicesRequest userChoiceRequest when !IsPlayerExists(userChoiceRequest.UserId):
+                throw new LobbyStateException($"player with id = {userChoiceRequest.UserId} is not exist");
             case SetUserChoicesRequest { Choices.Length: 0 } userChoicesRequest:
-                _userChoicesMap.Remove(userChoicesRequest.UserId);
+                if (_currentVoteStatus == VoteStatus.Vote)
+                    _userChoicesMap.Remove(userChoicesRequest.UserId);
+                else
+                    _playerConfirmations.Remove(userChoicesRequest.UserId);
                 return;
-            case SetUserChoicesRequest userChoicesRequest 
+            case SetUserChoicesRequest userChoicesRequest
                 when !userChoicesRequest.Choices.All(x => GetUserChoices(userChoicesRequest.UserId).Contains(x)):
                 throw new InvalidOperationLobbyStateException("Invalid user choice");
-            case SetUserChoicesRequest userChoicesRequest 
-                when !_userVoteGameSettingsMap[userChoicesRequest.UserId].MultiplyChoice && userChoicesRequest.Choices.Length != 1:
+            case SetUserChoicesRequest userChoicesRequest
+                when !_userVoteGameSettingsMap[userChoicesRequest.UserId].MultiplyChoice &&
+                     userChoicesRequest.Choices.Length != 1:
                 throw new InvalidOperationLobbyStateException("User not support multiply choices");
             case SetUserChoicesRequest userChoicesRequest:
-                _userChoicesMap[userChoicesRequest.UserId] = userChoicesRequest.Choices;
-                if (CanSetResult())
-                    SetResult();
+                if (_currentVoteStatus == VoteStatus.Vote)
+                {
+                    _userChoicesMap[userChoicesRequest.UserId] = userChoicesRequest.Choices;
+                    if (CanSetResult())
+                    {
+                        SetResult();
+                        DoBotActions();
+                    }
+                 
+                }
+                else
+                {
+                    _playerConfirmations.Add(userChoicesRequest.UserId);
+                    GoToNextGameIfNeeded();
+                }
                 break;
+            case SetRandomUserChoicesRequest randomChoiceRequest when !IsPlayerExists(randomChoiceRequest.UserId):
+                throw new LobbyStateException($"player with id = {randomChoiceRequest.UserId} is not exist");
             case SetRandomUserChoicesRequest rndUserChoicesRequest:
-                _userChoicesMap[rndUserChoicesRequest.UserId] = GetUserRandomChoices(rndUserChoicesRequest.UserId);
-                if (CanSetResult())
-                    SetResult();
+                if (_currentVoteStatus == VoteStatus.Vote)
+                {
+                    _userChoicesMap[rndUserChoicesRequest.UserId] = GetUserRandomChoices(rndUserChoicesRequest.UserId);
+                    if (CanSetResult())
+                    {
+                        SetResult();
+                        DoBotActions();
+                    }
+                }
+                else
+                {
+                    _playerConfirmations.Add(rndUserChoicesRequest.UserId);
+                    GoToNextGameIfNeeded();
+                }
                 break;
             default:
                 base.Handle(request);
@@ -68,14 +99,14 @@ public sealed class LobbyVoteState : LobbyState
         {
             if (_currentVoteStatus == VoteStatus.Vote)
             {
-                _userChoicesMap.Add(player.UserId, GetUserRandomChoices(player.UserId));
+                _userChoicesMap[player.UserId] = GetUserRandomChoices(player.UserId);
             }
             else if (_currentVoteStatus == VoteStatus.ShowResult)
             {
                 _playerConfirmations.Add(player.UserId);
             }
         }
-        
+
         if (CanSetResult())
         {
             SetResult();
@@ -190,7 +221,7 @@ public sealed class LobbyVoteState : LobbyState
 
         return result;
     }
-    
+
     private void GoToNextGameIfNeeded()
     {
         if (_playerConfirmations.Count == Players().Count && _currentVoteStatus == VoteStatus.ShowResult)

@@ -2,6 +2,7 @@
 using FGS.App.Models;
 using FGS.Domain.Base;
 using FGS.Domain.FgsLobby.Aggregate;
+using FGS.Domain.FgsLobby.Enums;
 using FGS.Domain.FgsLobby.Events;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
@@ -50,6 +51,15 @@ public class LobbyStateTests : IClassFixture<WebApplicationFactory<Program>>
        await lobbyAppService.SendRandomUserChoiceToLobbyAsync(lobbyId, user2, ct);
        
        lobby = await lobbyRepository.GetAsync(lobbyId, ct);
-       Assert.True(true);
+       // голосование
+       await lobbyAppService.SendRandomUserChoiceToLobbyAsync(lobbyId, user1, ct);
+       // todo не применяется в esdb ?!
+       await lobbyAppService.SendRandomUserChoiceToLobbyAsync(lobbyId, user2, ct);
+       lobby = await lobbyRepository.GetAsync(lobbyId, ct);
+       // подтверждение результатов
+       await lobbyAppService.SendRandomUserChoiceToLobbyAsync(lobbyId, user1, ct);
+       await lobbyAppService.SendRandomUserChoiceToLobbyAsync(lobbyId, user2, ct);
+       lobby = await lobbyRepository.GetAsync(lobbyId, ct);
+       Assert.True(lobby.Status == LobbyStatus.Closed);
     }
 }

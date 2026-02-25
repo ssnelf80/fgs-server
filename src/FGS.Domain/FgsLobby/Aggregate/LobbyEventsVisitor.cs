@@ -23,9 +23,6 @@ public sealed partial class Lobby
         public bool Visit(PlayerConnectedLobbyEvent e, CancellationToken ct = default)
         {
             lobby.Context.SendRequest(new AddPlayerRequest(e.UserId, e.IsBot));
-            // todo удалить после проверки автоперехода
-            // if (lobby.Context.Status == LobbyGameStateEnum.ReadyToInitialize)
-            //     lobby.Context.SendRequest(new InitializeGameRequest());
             return true;
         }
 
