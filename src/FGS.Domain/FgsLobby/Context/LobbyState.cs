@@ -1,4 +1,5 @@
 ﻿using FGS.Domain.FgsLobby.Context.Requests;
+using FGS.Domain.FgsLobby.Context.States;
 using FGS.Domain.FgsLobby.Entities;
 using FGS.Domain.FgsLobby.Enums;
 using FGS.Domain.FgsLobby.Exceptions;
@@ -11,7 +12,9 @@ public abstract class LobbyState
     protected LobbyStateContext Context => _context ?? throw new InvalidInnerCallLobbyStateException("Context is not initialized");
     
     public abstract LobbyGameStateEnum GameState { get; }
-    
+
+    private const int GamesNotStarted = -1;
+    private int _currentGameNumber = GamesNotStarted;
     private readonly bool _enableUnsafeContext = false;
     protected readonly LobbySettings LobbySettings;
     private readonly Dictionary<Guid, Player> _playersMap = [];
@@ -22,6 +25,7 @@ public abstract class LobbyState
     {
         _context = other.Context;
         _rnd = other._rnd;
+        _currentGameNumber = other._currentGameNumber;
     }
     protected LobbyState(
         LobbySettings lobbySettings, 
@@ -41,7 +45,7 @@ public abstract class LobbyState
     {
         
     }
-    protected abstract string[] GetRandomPlayerChoice(Guid userId);
+   
     protected bool IsPlayerExists(Guid userId) => _playersMap.ContainsKey(userId);
     protected Player GetPlayer(Guid playerId) => _playersMap[playerId];
     protected void UpdatePlayer(Player player)
@@ -58,6 +62,26 @@ public abstract class LobbyState
     protected IReadOnlyList<Player> InnocentPlayers() => _playersMap.Values.Where(x=> x.Role == PlayerRole.Innocent).OrderBy(x=> x.UserId).ToList().AsReadOnly();
     protected IReadOnlyList<Player> BotPlayers() => _playersMap.Values.Where(x => x.IsBot).OrderBy(x => x.UserId).ToList().AsReadOnly();
     protected Player GetRandomPlayer(IReadOnlyList<Player> players) => players[Random.Next(0, players.Count)];
+
+    protected LobbyState GetNextGameState()
+    {
+        if (LobbySettings.GamesSettings.Count == 0)
+            return new LobbyEndState(this);
+        
+        _currentGameNumber++;
+        if (_currentGameNumber < LobbySettings.GamesSettings.Count)
+        {
+            switch (LobbySettings.GamesSettings[_currentGameNumber].LobbyGameType)
+            {
+                case LobbyGameType.Vote:
+                    return new LobbyVoteState(this, LobbySettings.GamesSettings[_currentGameNumber]);
+                default: // todo поддержку остальных игр
+                    throw new InvalidOperationLobbyStateException("Game type not supported");
+            }
+        }
+        
+        return new LobbyEndState(this);
+    }
 
     protected void InitRandom(int seed)
     {

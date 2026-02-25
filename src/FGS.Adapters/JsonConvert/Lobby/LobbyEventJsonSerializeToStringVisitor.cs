@@ -14,4 +14,15 @@ public class LobbyEventJsonSerializeToStringVisitor : ILobbyEventVisitor<string>
     public string Visit(PlayerConnectedLobbyEvent e, CancellationToken ct = default) => JsonSerializer.Serialize(e);
 
     public string Visit(PlayerDisconnectedLobbyEvent e, CancellationToken ct = default) => JsonSerializer.Serialize(e);
+    public string Visit(LobbySetUserChoiceEvent e, CancellationToken ct = default)
+        => JsonSerializer.Serialize(e);
+
+    public string Visit(LobbySetUserRandomChoiceEvent e, CancellationToken ct = default)
+        => JsonSerializer.Serialize(e);
+
+    public string Visit(SetBotToPlayerLobbyEvent e, CancellationToken ct = default)
+        => JsonSerializer.Serialize(e);
+
+    public string Visit(RemoveBotFromPlayerLobbyEvent e, CancellationToken ct = default)
+        => JsonSerializer.Serialize(e);
 }

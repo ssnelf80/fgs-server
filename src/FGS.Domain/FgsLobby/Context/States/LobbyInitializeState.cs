@@ -7,11 +7,6 @@ namespace FGS.Domain.FgsLobby.Context.States;
 public class LobbyInitializeState(LobbyState other) : LobbyState(other)
 {
     public override LobbyGameStateEnum GameState => LobbyGameStateEnum.ReadyToInitialize;
-   
-    protected override string[] GetRandomPlayerChoice(Guid userId)
-    {
-        throw new InvalidInnerCallLobbyStateException("GetRandomPlayerChoice");
-    }
 
     public override void Handle(ILobbyContextRequest request)
     {

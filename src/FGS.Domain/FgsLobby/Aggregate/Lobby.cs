@@ -29,18 +29,6 @@ public sealed partial class Lobby : AggregateRoot<LobbyEvent>
         return lobby;
     }
 
-    public void ConnectBot(Guid botId)
-    {
-        EmitEvent(new BotConnectedLobbyEvent(Id, botId));
-        
-        if (Context.Status != LobbyGameStateEnum.WaitPlayers)
-            EmitEvent(new LobbyStatusChangedEvent(Id, LobbyStatus.InProgress));
-        if (Context.Status == LobbyGameStateEnum.EndState)
-            EmitEvent(new LobbyStatusChangedEvent(Id, LobbyStatus.Closed));
-    }
-    
-    public void DisconnectBot(Guid botId) => EmitEvent(new BotDisconnectedLobbyEvent(Id, botId));
-
     public void SetBotToUser(Guid userId)
     {
         EmitEvent(new SetBotToPlayerLobbyEvent(Id, userId));
@@ -71,7 +59,17 @@ public sealed partial class Lobby : AggregateRoot<LobbyEvent>
 
     public void ConnectUser(Guid userId)
     {
-        EmitEvent(new PlayerConnectedLobbyEvent(Id, userId));
+        EmitEvent(new PlayerConnectedLobbyEvent(Id, userId, false));
+        
+        if (Context.Status != LobbyGameStateEnum.WaitPlayers)
+            EmitEvent(new LobbyStatusChangedEvent(Id, LobbyStatus.InProgress));
+        if (Context.Status == LobbyGameStateEnum.EndState)
+            EmitEvent(new LobbyStatusChangedEvent(Id, LobbyStatus.Closed));
+    }
+    
+    public void ConnectBot(Guid userId)
+    {
+        EmitEvent(new PlayerConnectedLobbyEvent(Id, userId, true));
         
         if (Context.Status != LobbyGameStateEnum.WaitPlayers)
             EmitEvent(new LobbyStatusChangedEvent(Id, LobbyStatus.InProgress));

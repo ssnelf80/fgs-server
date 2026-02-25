@@ -148,5 +148,11 @@ public class FgsViewModelRepository(
         return result;
     }
 
-    
+    public Task<bool> Visit(LobbySetUserChoiceEvent e, CancellationToken ct = default) => Task.FromResult(true);
+
+    public Task<bool> Visit(LobbySetUserRandomChoiceEvent e, CancellationToken ct = default) => Task.FromResult(true);
+
+    public Task<bool> Visit(SetBotToPlayerLobbyEvent e, CancellationToken ct = default) => Task.FromResult(true);
+
+    public Task<bool> Visit(RemoveBotFromPlayerLobbyEvent e, CancellationToken ct = default) => Task.FromResult(true);
 }

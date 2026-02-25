@@ -22,9 +22,10 @@ public sealed partial class Lobby
 
         public bool Visit(PlayerConnectedLobbyEvent e, CancellationToken ct = default)
         {
-            lobby.Context.SendRequest(new AddPlayerRequest(e.UserId));
-            if (lobby.Context.Status == LobbyGameStateEnum.ReadyToInitialize)
-                lobby.Context.SendRequest(new InitializeGameRequest());
+            lobby.Context.SendRequest(new AddPlayerRequest(e.UserId, e.IsBot));
+            // todo удалить после проверки автоперехода
+            // if (lobby.Context.Status == LobbyGameStateEnum.ReadyToInitialize)
+            //     lobby.Context.SendRequest(new InitializeGameRequest());
             return true;
         }
 
@@ -43,20 +44,6 @@ public sealed partial class Lobby
         public bool Visit(LobbySetUserRandomChoiceEvent e, CancellationToken ct = default)
         {
             lobby.Context.SendRequest(new SetRandomUserChoicesRequest(e.UserId));
-            return true;
-        }
-
-        public bool Visit(BotConnectedLobbyEvent e, CancellationToken ct = default)
-        {
-            lobby.Context.SendRequest(new AddPlayerRequest(e.BotId, true));
-            if (lobby.Context.Status == LobbyGameStateEnum.ReadyToInitialize)
-                lobby.Context.SendRequest(new InitializeGameRequest());
-            return true;
-        }
-
-        public bool Visit(BotDisconnectedLobbyEvent e, CancellationToken ct = default)
-        {
-            lobby.Context.SendRequest(new RemovePlayerRequest(e.BotId));
             return true;
         }
 

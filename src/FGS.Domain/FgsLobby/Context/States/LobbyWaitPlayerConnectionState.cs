@@ -15,11 +15,6 @@ public class LobbyWaitPlayerConnectionState : LobbyState
 
     public override LobbyGameStateEnum GameState => LobbyGameStateEnum.WaitPlayers;
 
-    protected override string[] GetRandomPlayerChoice(Guid userId)
-    {
-        throw new InvalidInnerCallLobbyStateException("GetRandomPlayerChoice");
-    }
-
     public override void Handle(ILobbyContextRequest request)
     {
         switch (request)
@@ -46,6 +41,7 @@ public class LobbyWaitPlayerConnectionState : LobbyState
         if (UnsafePlayerMap.Count == LobbySettings.PlayersCount)
         {
             Context.TransitionTo(new LobbyInitializeState(this));
+            Context.SendRequest(new InitializeGameRequest());
         }
            
     }

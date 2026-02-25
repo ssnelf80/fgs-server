@@ -13,8 +13,6 @@ public sealed class LobbyWelcomeState : LobbyState
             _playerConfirmations.Add(bot.UserId);
     }
 
-    protected override string[] GetRandomPlayerChoice(Guid userId) => [string.Empty];
-
     private readonly HashSet<Guid> _playerConfirmations = [];
 
     public LobbyWelcomeState(LobbyState other) : base(other)
@@ -34,9 +32,8 @@ public sealed class LobbyWelcomeState : LobbyState
                     _playerConfirmations.Remove(userChoiceRequest.UserId);
                 else
                     _playerConfirmations.Add(userChoiceRequest.UserId);
-            
-                // todo next transition
-            
+                
+                Context.TransitionTo(GetNextGameState());
                 return;
             }
             case SetRandomUserChoicesRequest randomChoiceRequest when !IsPlayerExists(randomChoiceRequest.UserId):
@@ -44,8 +41,7 @@ public sealed class LobbyWelcomeState : LobbyState
             case SetRandomUserChoicesRequest randomChoiceRequest:
                 _playerConfirmations.Add(randomChoiceRequest.UserId);
             
-                // todo next transition
-            
+                Context.TransitionTo(GetNextGameState());
                 return;
             default:
                 base.Handle(request);
