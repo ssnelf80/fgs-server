@@ -1,4 +1,5 @@
-﻿using FGS.Domain.FgsLobby.Context.Requests;
+﻿using FGS.Domain.FgsLobby.Context.PlayerStates;
+using FGS.Domain.FgsLobby.Context.Requests;
 using FGS.Domain.FgsLobby.Entities;
 using FGS.Domain.FgsLobby.Enums;
 using FGS.Domain.FgsLobby.Exceptions;
@@ -14,6 +15,24 @@ public class LobbyWaitPlayerConnectionState : LobbyState
     }
 
     public override LobbyGameStateEnum GameState => LobbyGameStateEnum.WaitPlayers;
+
+    protected override PlayerGameState GetPlayerGameState(Guid userId)
+    {
+        var player = GetPlayer(userId);
+        return new PlayerGameState
+        {
+            Balance = player.Balance,
+            PlayerRole = player.Role,
+            GameState = GameState,
+            InnerGameState = string.Empty,
+            GameNumber = CurrentGameNumber,
+            Choices = ConfirmationChoice,
+            SelectedChoices = ConfirmationChoice,
+            CanSendChoice = true,
+            GameInfoMessage = $"Ожидание других игроков: {Players().Count}/{LobbySettings.PlayersCount}",
+            RoundInfoMessage = string.Join(",", Players().Select(x=> x.UserId))
+        };
+    }
 
     public override void Handle(ILobbyContextRequest request)
     {
@@ -60,4 +79,6 @@ public class LobbyWaitPlayerConnectionState : LobbyState
         if (s.StartBalance < 0)
             throw new LobbyStateException($"Стартовый баланс игроков < 0 {s.StartBalance} ");
     }
+    
+    
 }

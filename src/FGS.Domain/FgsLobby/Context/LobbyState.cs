@@ -1,4 +1,5 @@
-﻿using FGS.Domain.FgsLobby.Context.Requests;
+﻿using FGS.Domain.FgsLobby.Context.PlayerStates;
+using FGS.Domain.FgsLobby.Context.Requests;
 using FGS.Domain.FgsLobby.Context.States;
 using FGS.Domain.FgsLobby.Entities;
 using FGS.Domain.FgsLobby.Enums;
@@ -8,6 +9,7 @@ namespace FGS.Domain.FgsLobby.Context;
 
 public abstract class LobbyState
 {
+    protected static IReadOnlyCollection<string> ConfirmationChoice = ["y"];
     private LobbyStateContext? _context;
     protected LobbyStateContext Context => _context ?? throw new InvalidInnerCallLobbyStateException("Context is not initialized");
     
@@ -15,6 +17,7 @@ public abstract class LobbyState
 
     private const int GamesNotStarted = -1;
     private int _currentGameNumber = GamesNotStarted;
+    protected int CurrentGameNumber => _currentGameNumber;
     private readonly bool _enableUnsafeContext = false;
     protected readonly LobbySettings LobbySettings;
     private readonly Dictionary<Guid, Player> _playersMap = [];
@@ -82,6 +85,8 @@ public abstract class LobbyState
         
         return new LobbyEndState(this);
     }
+
+    protected abstract PlayerGameState GetPlayerGameState(Guid userId);
 
     protected void ChangeBalance(Guid userId, BalanceOperation balanceOperation)
     {

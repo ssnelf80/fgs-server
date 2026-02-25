@@ -1,4 +1,5 @@
-﻿using FGS.Domain.FgsLobby.Context.Requests;
+﻿using FGS.Domain.FgsLobby.Context.PlayerStates;
+using FGS.Domain.FgsLobby.Context.Requests;
 using FGS.Domain.FgsLobby.Enums;
 using FGS.Domain.FgsLobby.Exceptions;
 
@@ -37,5 +38,23 @@ public class LobbyInitializeState(LobbyState other) : LobbyState(other)
     {
         foreach (var player in Players())
             UpdatePlayer(player with { Balance = LobbySettings.StartBalance });
+    }
+    
+    protected override PlayerGameState GetPlayerGameState(Guid userId)
+    {
+        var player = GetPlayer(userId);
+        return new PlayerGameState
+        {
+            Balance = player.Balance,
+            PlayerRole = player.Role,
+            GameState = GameState,
+            InnerGameState = string.Empty,
+            GameNumber = CurrentGameNumber,
+            Choices = [],
+            SelectedChoices = [],
+            CanSendChoice = false,
+            GameInfoMessage = "Инициализация игры, ожидайте",
+            RoundInfoMessage = string.Empty
+        };
     }
 }

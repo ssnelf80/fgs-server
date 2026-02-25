@@ -1,4 +1,5 @@
-﻿using FGS.Domain.FgsLobby.Context.Requests;
+﻿using FGS.Domain.FgsLobby.Context.PlayerStates;
+using FGS.Domain.FgsLobby.Context.Requests;
 using FGS.Domain.FgsLobby.Enums;
 using FGS.Domain.FgsLobby.Exceptions;
 
@@ -55,5 +56,23 @@ public sealed class LobbyWelcomeState : LobbyState
     {
         if (_playerConfirmations.Count == Players().Count)
             Context.TransitionTo(GetNextGameState());
+    }
+    
+    protected override PlayerGameState GetPlayerGameState(Guid userId)
+    {
+        var player = GetPlayer(userId);
+        return new PlayerGameState
+        {
+            Balance = player.Balance,
+            PlayerRole = player.Role,
+            GameState = GameState,
+            InnerGameState = string.Empty,
+            GameNumber = CurrentGameNumber,
+            Choices = ConfirmationChoice,
+            SelectedChoices = ConfirmationChoice,
+            CanSendChoice = true,
+            GameInfoMessage = LobbySettings.WelcomeMessage,
+            RoundInfoMessage = string.Empty
+        };
     }
 }

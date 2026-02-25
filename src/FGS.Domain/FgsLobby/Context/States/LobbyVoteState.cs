@@ -1,4 +1,5 @@
 ﻿using FGS.Domain.FgsLobby.Context.GameSettings;
+using FGS.Domain.FgsLobby.Context.PlayerStates;
 using FGS.Domain.FgsLobby.Context.Requests;
 using FGS.Domain.FgsLobby.Entities;
 using FGS.Domain.FgsLobby.Enums;
@@ -226,5 +227,25 @@ public sealed class LobbyVoteState : LobbyState
     {
         if (_playerConfirmations.Count == Players().Count && _currentVoteStatus == VoteStatus.ShowResult)
             Context.TransitionTo(GetNextGameState());
+    }
+    
+    protected override PlayerGameState GetPlayerGameState(Guid userId)
+    {
+        var player = GetPlayer(userId);
+        return new PlayerGameState
+        {
+            Balance = player.Balance,
+            PlayerRole = player.Role,
+            GameState = GameState,
+            InnerGameState = _currentVoteStatus.ToString(),
+            GameNumber = CurrentGameNumber,
+            Choices = _currentVoteStatus == VoteStatus.Vote ? GetUserChoices(userId) : ConfirmationChoice,
+            SelectedChoices = _currentVoteStatus == VoteStatus.Vote 
+                ? _userChoicesMap[userId] 
+                : (_playerConfirmations.Contains(userId) ? ConfirmationChoice : []),
+            CanSendChoice = true,
+            GameInfoMessage = _globalSettings.GameDescription,
+            RoundInfoMessage = string.Empty
+        };
     }
 }
