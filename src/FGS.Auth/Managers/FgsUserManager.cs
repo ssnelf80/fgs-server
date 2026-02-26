@@ -1,5 +1,6 @@
 ﻿using FGS.Auth.Entities;
 using FGS.Auth.Enums;
+using FGS.Auth.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -48,5 +49,14 @@ public class FgsUserManager(
             nameof(FgsUserRole.Master), 
             nameof(FgsUserRole.Spectator)]);
     }
+
+    public async Task<UserInfoModelWithRoles> GetUserInfoWithRolesAsync(FgsUser user) =>
+        new()
+        {
+            Id = Guid.Parse(user.Id),
+            Login = user.UserName ?? string.Empty,
+            DisplayName = user.DisplayName,
+            Roles = await GetRolesAsync(user)
+        };
 }
 

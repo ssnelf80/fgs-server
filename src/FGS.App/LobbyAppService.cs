@@ -16,7 +16,7 @@ public class LobbyAppService(
 {
     public async Task<Guid> CreateLobbyAsync(CreateLobbyRequest request, CancellationToken ct)
     {
-        // todo оплетку над стандартными исключениями eventStore и аггрегатов
+        // todo оплетку над стандартными исключениями eventStore и агрегатов
         var lobby = Lobby.Create(request.UserId, request.Name, LobbySettings.Default);
         await lobbyRepository.SaveAsync(lobby, ct);
         return lobby.Id;

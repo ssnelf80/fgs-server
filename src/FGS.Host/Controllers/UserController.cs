@@ -1,5 +1,7 @@
 ﻿using FGS.Auth.Entities;
 using FGS.Auth.Enums;
+using FGS.Auth.Managers;
+using FGS.Auth.Models;
 using FGS.Auth.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -18,6 +20,15 @@ public class UserController(SignInManager<FgsUser> signInManager, FgsUserService
     {
         var user = await signInManager.UserManager.GetUserAsync(User);
         return await signInManager.UserManager.GetRolesAsync(user!);
+    }
+    
+    [HttpGet]
+    [Route("current")]
+    public async Task<UserInfoModelWithRoles> GetUserInfoWithRolesAsync(CancellationToken cancellationToken)
+    {
+        var manager = (FgsUserManager)signInManager.UserManager;
+        var user = await manager.GetUserAsync(User);
+        return await manager.GetUserInfoWithRolesAsync(user!);
     }
 
     [HttpGet]

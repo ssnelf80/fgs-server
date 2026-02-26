@@ -62,4 +62,19 @@ public class LobbyStateTests : IClassFixture<WebApplicationFactory<Program>>
        lobby = await lobbyRepository.GetAsync(lobbyId, ct);
        Assert.True(lobby.Status == LobbyStatus.Closed);
     }
+    
+    [Fact]
+    public async Task Create100Lobby_ShouldSuccess()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        using var scope = _factory.Services.CreateScope();
+        var lobbyAppService = scope.ServiceProvider.GetService<LobbyAppService>()!;
+        var user1 = Guid.NewGuid();
+        for (var i = 0; i < 100; i++)
+        {
+            var lobbyId = await lobbyAppService.CreateLobbyAsync(new CreateLobbyRequest(user1, $"Lobby {i}"), 
+                ct);
+        }
+        Assert.True(true);
+    }
 }

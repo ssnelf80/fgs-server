@@ -1,5 +1,7 @@
 ﻿using FGS.Auth.Entities;
 using FGS.Auth.Enums;
+using FGS.Auth.Managers;
+using FGS.Auth.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace FGS.Auth.Services;
