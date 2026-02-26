@@ -14,9 +14,9 @@ public class AuthController(SignInManager<FgsUser> signInManager, FgsUserManager
 {
     [HttpPost]
     [Route("register")]
-    public async Task<IdentityResult> CreateUserAsync(LoginModel request, CancellationToken cancellationToken)
+    public async Task<IdentityResult> CreateUserAsync(RegisterModel request, CancellationToken cancellationToken)
     {
-        return await fgsUserManager.CreateDefaultUser(request.Login, request.Password);
+        return await fgsUserManager.CreateDefaultUser(request.Login, request.Password, request.DisplayName);
     }
 
     [HttpPost]

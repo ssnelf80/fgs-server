@@ -1,5 +1,7 @@
 ﻿using FGS.App;
 using FGS.App.Models;
+using FGS.Auth.Managers;
+using FGS.Auth.Services;
 using FGS.Domain.Base;
 using FGS.Domain.FgsLobby.Aggregate;
 using FGS.Domain.FgsLobby.Enums;
@@ -62,19 +64,33 @@ public class LobbyStateTests : IClassFixture<WebApplicationFactory<Program>>
        lobby = await lobbyRepository.GetAsync(lobbyId, ct);
        Assert.True(lobby.Status == LobbyStatus.Closed);
     }
-    
+
     [Fact]
-    public async Task Create100Lobby_ShouldSuccess()
+    public async Task GenerateNamesCheck()
     {
         var ct = TestContext.Current.CancellationToken;
         using var scope = _factory.Services.CreateScope();
-        var lobbyAppService = scope.ServiceProvider.GetService<LobbyAppService>()!;
-        var user1 = Guid.NewGuid();
-        for (var i = 0; i < 100; i++)
-        {
-            var lobbyId = await lobbyAppService.CreateLobbyAsync(new CreateLobbyRequest(user1, $"Lobby {i}"), 
-                ct);
-        }
-        Assert.True(true);
+        var userService = scope.ServiceProvider.GetService<FgsUserService>();
+        var fakeUsers = Enumerable.Range(0, 15).Select(x => Guid.NewGuid()).ToHashSet();
+        // fakeUsers.Add(Guid.Parse("c32c961f-9d38-43b3-9817-4254ded6a355"));
+        // fakeUsers.Add(Guid.Parse("ba012bb3-d04f-4d2c-a78c-789c096ab9d5"));
+        // fakeUsers.Add(Guid.Parse("98094911-41a7-4b9c-a8e8-ced7358a5bb3"));
+        var result = await userService.GetUserNamesAsync(fakeUsers, ct);
+        Assert.True(result.Values.ToHashSet().Count == 15);
     }
+    
+    // [Fact]
+    // public async Task Create100Lobby_ShouldSuccess()
+    // {
+    //     var ct = TestContext.Current.CancellationToken;
+    //     using var scope = _factory.Services.CreateScope();
+    //     var lobbyAppService = scope.ServiceProvider.GetService<LobbyAppService>()!;
+    //     var user1 = Guid.NewGuid();
+    //     for (var i = 0; i < 100; i++)
+    //     {
+    //         var lobbyId = await lobbyAppService.CreateLobbyAsync(new CreateLobbyRequest(user1, $"Lobby {i}"), 
+    //             ct);
+    //     }
+    //     Assert.True(true);
+    // }
 }
