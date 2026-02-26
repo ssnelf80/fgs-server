@@ -26,7 +26,7 @@ public class LobbyController(SignInManager<FgsUser> signInManager, LobbyAppServi
     
     [HttpGet]
     [Route("list")]
-    public async Task<IReadOnlyCollection<LobbyEntity>> UsersListAsync(
+    public async Task<LobbyEntityWithUserList> UsersListAsync(
         string? searchString, 
         int? offset, 
         int? limit,

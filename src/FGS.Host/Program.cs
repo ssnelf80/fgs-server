@@ -21,7 +21,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy(CorsPolicyName,
         policy =>
         {
-            policy.WithOrigins("http://localhost:3000") // Allows debug
+            policy.WithOrigins("http://localhost:3000", "http://192.168.88.244:3000") // Allows debug
                 .AllowAnyHeader()  // Allows all headers
                 .AllowAnyMethod() // Allows all methods (GET, POST, PUT, DELETE, etc.)
                 .AllowCredentials(); 

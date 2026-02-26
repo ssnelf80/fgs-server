@@ -1,4 +1,5 @@
 ﻿using FGS.App.Models;
+using FGS.Auth.Services;
 using FGS.Domain.Base;
 using FGS.Domain.FgsLobby.Aggregate;
 using FGS.Domain.FgsLobby.Entities;
@@ -11,7 +12,8 @@ namespace FGS.App;
 public class LobbyAppService(
     IAggregateRepository<Lobby, LobbyEvent> lobbyRepository,
     IFgsViewModelRepository fgsViewModelRepository,
-    IConnectionTrackerService connectionTrackerService
+    IConnectionTrackerService connectionTrackerService,
+    FgsUserService fgsUserService
     )
 {
     public async Task<Guid> CreateLobbyAsync(CreateLobbyRequest request, CancellationToken ct)
@@ -22,9 +24,15 @@ public class LobbyAppService(
         return lobby.Id;
     }
 
-    public Task<IReadOnlyCollection<LobbyEntity>> GetLobbyListAsync(LobbyEntitySearchFilter searchFilter,
-        CancellationToken ct) =>
-        fgsViewModelRepository.GetLobbyEntitiesListAsync(searchFilter, ct);
+    public async Task<LobbyEntityWithUserList> GetLobbyListAsync(LobbyEntitySearchFilter searchFilter,
+        CancellationToken ct)
+    {
+        var entities = await fgsViewModelRepository.GetLobbyEntitiesListAsync(searchFilter, ct);
+        HashSet<Guid> userIds = entities.Select(x => x.MasterUserId).ToHashSet();
+        userIds.UnionWith(entities.SelectMany(x => x.ConnectedUsers).Distinct());
+        var userNames = await fgsUserService.GetUserNamesAsync(userIds, ct);
+        return new LobbyEntityWithUserList(entities, userNames);
+    }
 
     public async Task SendUserChoiceToLobbyAsync(Guid lobbyId, Guid userId, string[] values,
         CancellationToken ct)
