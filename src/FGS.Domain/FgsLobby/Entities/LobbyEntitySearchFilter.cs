@@ -6,6 +6,8 @@ namespace FGS.Domain.FgsLobby.Entities;
 
 public class LobbyEntitySearchFilter : BaseSearchFilter<LobbyEntity>
 {
+    public Guid? StrictLobbyId { get; set; }
+    
     public override Expression<Func<LobbyEntity, bool>> GetWhereExpression()
     {
         PredicateBuilder<LobbyEntity> predicate = new();
@@ -24,6 +26,9 @@ public class LobbyEntitySearchFilter : BaseSearchFilter<LobbyEntity>
         {
             predicate.Or(x => x.Name.Contains(SearchString));
         }
+        
+        if (StrictLobbyId.HasValue)
+            predicate.And(x => x.Id == StrictLobbyId.Value);
         
         return predicate.GetExpression();
     }

@@ -30,6 +30,7 @@ public class LobbyController(SignInManager<FgsUser> signInManager, LobbyAppServi
         int? offset, 
         int? limit,
         bool? ingnoreCase, 
+        Guid? strictLobbyId,
         CancellationToken cancellationToken)
     {
        return await lobbyAppService.GetLobbyListAsync(new LobbyEntitySearchFilter
@@ -38,6 +39,7 @@ public class LobbyController(SignInManager<FgsUser> signInManager, LobbyAppServi
             Limit = limit ?? 20,
             IgnoreCase = ingnoreCase ?? true,
             SearchString = searchString ?? string.Empty,
+            StrictLobbyId = strictLobbyId
         }, cancellationToken);
     }
 
