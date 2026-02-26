@@ -14,14 +14,13 @@ namespace FGS.Host.Controllers;
 [Route("lobby")]
 public class LobbyController(SignInManager<FgsUser> signInManager, LobbyAppService lobbyAppService) : ControllerBase
 {
-    [HttpGet]
+    [HttpPost]
     [Authorize(Roles = nameof(FgsUserRole.Master))]
     [Route("create")]
-    public async Task CreateLobbyAsync(CancellationToken ct)
+    public async Task CreateLobbyAsync(CreateLobbyRequest request, CancellationToken ct)
     {
         var user = await signInManager.UserManager.GetUserAsync(User);
-        var userId = Guid.Parse(user!.Id);
-        await lobbyAppService.CreateLobbyAsync(new CreateLobbyRequest(userId, Guid.NewGuid().ToString()), ct);
+        await lobbyAppService.CreateLobbyAsync(request, ct);
     }
     
     [HttpGet]

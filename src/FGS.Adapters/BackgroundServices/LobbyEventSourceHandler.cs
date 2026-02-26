@@ -1,19 +1,21 @@
-﻿using System.Text.Json;
-using EventStore.Client;
+﻿using EventStore.Client;
+using FGS.Adapters.Hubs;
 using FGS.DAL.EventSourceRepositories;
 using FGS.DAL.Extensions;
-using FGS.Domain.FgsLobby.Events;
+using FGS.Domain.FgsLobby.Entities;
 using FGS.Domain.Services;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-namespace FGS.DAL.BackgroundServices;
+namespace FGS.Adapters.BackgroundServices;
 
 public class EventStoreBackgroundService(
     EventStoreClient eventStoreClient,
     IServiceProvider serviceProvider,
-    ILogger<EventStoreBackgroundService> logger
+    ILogger<EventStoreBackgroundService> logger,
+    IHubContext<LobbyHub> lobbyHub
 ) : BackgroundService
 {
     private static Position CurrentPosition = Position.Start;
@@ -85,5 +87,10 @@ public class EventStoreBackgroundService(
             cancellationToken);
 
         CurrentPosition = resolvedEvent.Event.Position;
+        
+        if (lobbyEvent != null)
+            await lobbyHub.Clients.All.SendAsync("lobbyChanged", 
+                new LobbyStateChangedHubEvent(lobbyEvent.LobbyId, lobbyEvent.GetType().Name), 
+                cancellationToken);
     }
 }

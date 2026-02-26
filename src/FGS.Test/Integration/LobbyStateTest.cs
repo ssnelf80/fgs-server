@@ -75,7 +75,7 @@ public class LobbyStateTests : IClassFixture<WebApplicationFactory<Program>>
         // fakeUsers.Add(Guid.Parse("c32c961f-9d38-43b3-9817-4254ded6a355"));
         // fakeUsers.Add(Guid.Parse("ba012bb3-d04f-4d2c-a78c-789c096ab9d5"));
         // fakeUsers.Add(Guid.Parse("98094911-41a7-4b9c-a8e8-ced7358a5bb3"));
-        var result = await userService.GetUserNamesAsync(fakeUsers, ct);
+        var result = await userService!.GetUserNamesAsync(fakeUsers, ct);
         Assert.True(result.Values.ToHashSet().Count == 15);
     }
     

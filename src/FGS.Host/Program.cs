@@ -1,9 +1,10 @@
 using System.Text.Json.Serialization;
 using EventStore.Client;
+using FGS.Adapters.BackgroundServices;
 using FGS.Adapters.ConnectionTracker;
+using FGS.Adapters.Hubs;
 using FGS.Adapters.JsonConvert.Lobby;
 using FGS.App;
-using FGS.DAL.BackgroundServices;
 using FGS.DAL.EventSourceRepositories;
 using FGS.DAL.ViewModel;
 using FGS.Domain.Base;
@@ -14,6 +15,9 @@ using FGS.Host.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// todo разобраться с уязвимостями
+builder.Services.AddSignalR();
+
 // cors временно
 const string CorsPolicyName = "AllowDebugOrigin";
 builder.Services.AddCors(options =>
@@ -21,7 +25,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy(CorsPolicyName,
         policy =>
         {
-            policy.WithOrigins("http://localhost:3000", "http://192.168.88.244:3000") // Allows debug
+            policy.WithOrigins("http://localhost:3000") // Allows debug
                 .AllowAnyHeader()  // Allows all headers
                 .AllowAnyMethod() // Allows all methods (GET, POST, PUT, DELETE, etc.)
                 .AllowCredentials(); 
@@ -94,7 +98,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-
+app.MapHub<LobbyHub>("/lobbyHub");
 
 app.Run();
 
