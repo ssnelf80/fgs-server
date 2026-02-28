@@ -2,6 +2,7 @@
 
 namespace FGS.Domain.FgsLobby.Context.PlayerStates;
 
+// todo нужен глубокий рефактор и переосмысление
 public record PlayerGameState
 {
     public long Balance { get; init; }

@@ -61,6 +61,7 @@ builder.Services.AddHostedService<EventStoreBackgroundService>();
 
 // app
 builder.Services.AddScoped<LobbyAppService>();
+builder.Services.AddScoped<UserConnectionService>();
 builder.Services.AddSingleton<ILobbyEventJsonConvert, LobbyEventJsonConvert>();
 
 

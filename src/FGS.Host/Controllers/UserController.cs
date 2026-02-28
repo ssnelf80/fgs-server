@@ -1,8 +1,10 @@
-﻿using FGS.Auth.Entities;
+﻿using FGS.App;
+using FGS.Auth.Entities;
 using FGS.Auth.Enums;
 using FGS.Auth.Managers;
 using FGS.Auth.Models;
 using FGS.Auth.Services;
+using FGS.Domain.FgsLobby.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -12,7 +14,11 @@ namespace FGS.Host.Controllers;
 [ApiController]
 [Authorize]
 [Route("user")]
-public class UserController(SignInManager<FgsUser> signInManager, FgsUserService fgsUserService) : ControllerBase
+public class UserController(
+    SignInManager<FgsUser> signInManager, 
+    FgsUserService fgsUserService,
+    UserConnectionService userConnectionService
+    ) : ControllerBase
 {
     [HttpGet]
     [Route("current/roles")]
@@ -29,6 +35,15 @@ public class UserController(SignInManager<FgsUser> signInManager, FgsUserService
         var manager = (FgsUserManager)signInManager.UserManager;
         var user = await manager.GetUserAsync(User);
         return await manager.GetUserInfoWithRolesAsync(user!);
+    }
+    
+    [HttpGet]
+    [Route("connection/current")]
+    public async Task<ConnectionTrackerEntity?> GetCurrentUserConnectionOrDefaultAsync(CancellationToken cancellationToken)
+    {
+        var manager = (FgsUserManager)signInManager.UserManager;
+        var user = await manager.GetUserAsync(User);
+        return await userConnectionService.GetConnectionTrackerOrDefault(Guid.Parse(user!.Id), cancellationToken);
     }
 
     [HttpGet]

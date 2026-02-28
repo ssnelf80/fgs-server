@@ -7,7 +7,7 @@ namespace FGS.Domain.FgsLobby.Context.States;
 public class LobbyEndState(LobbyState other) : LobbyState(other)
 {
     public override LobbyGameStateEnum GameState => LobbyGameStateEnum.EndState;
-    protected override PlayerGameState GetPlayerGameState(Guid userId)
+    public override PlayerGameState GetPlayerGameState(Guid userId)
     {
         var player = GetPlayer(userId);
         return new PlayerGameState

@@ -86,7 +86,7 @@ public abstract class LobbyState
         return new LobbyEndState(this);
     }
 
-    protected abstract PlayerGameState GetPlayerGameState(Guid userId);
+    public abstract PlayerGameState GetPlayerGameState(Guid userId);
 
     protected void ChangeBalance(Guid userId, BalanceOperation balanceOperation)
     {

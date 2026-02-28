@@ -47,7 +47,7 @@ public class FgsUserManager(
         return await AddToRolesAsync(user, 
         [
             nameof(FgsUserRole.Player), 
-            nameof(FgsUserRole.Master), 
+            //nameof(FgsUserRole.Master), // todo убрать впоследствии, либо сделать гибче
             nameof(FgsUserRole.Spectator)]);
     }
 

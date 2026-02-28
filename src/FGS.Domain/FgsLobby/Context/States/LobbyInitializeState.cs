@@ -40,7 +40,7 @@ public class LobbyInitializeState(LobbyState other) : LobbyState(other)
             UpdatePlayer(player with { Balance = LobbySettings.StartBalance });
     }
     
-    protected override PlayerGameState GetPlayerGameState(Guid userId)
+    public override PlayerGameState GetPlayerGameState(Guid userId)
     {
         var player = GetPlayer(userId);
         return new PlayerGameState

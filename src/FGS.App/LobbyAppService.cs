@@ -2,6 +2,7 @@
 using FGS.Auth.Services;
 using FGS.Domain.Base;
 using FGS.Domain.FgsLobby.Aggregate;
+using FGS.Domain.FgsLobby.Context.PlayerStates;
 using FGS.Domain.FgsLobby.Entities;
 using FGS.Domain.FgsLobby.Enums;
 using FGS.Domain.FgsLobby.Events;
@@ -16,6 +17,26 @@ public class LobbyAppService(
     FgsUserService fgsUserService
     )
 {
+    public async Task SendChoicesToLobbyAsync(Guid lobbyId, Guid userId, string[] choices, CancellationToken ct)
+    {
+        var lobby = await lobbyRepository.GetAsync(lobbyId, ct);
+        lobby.SetUserChoice(userId, choices);
+        await lobbyRepository.SaveAsync(lobby, ct);
+    }
+    
+    public async Task AddBotToLobbyAsync(Guid lobbyId, CancellationToken ct)
+    {
+        var lobby = await lobbyRepository.GetAsync(lobbyId, ct);
+        lobby.ConnectBot(Guid.NewGuid());
+        await lobbyRepository.SaveAsync(lobby, ct);
+    }
+    
+    public async Task<PlayerGameState> GetPlayerGameStateAsync(Guid lobbyId, Guid userId, CancellationToken ct)
+    {
+        var lobby = await lobbyRepository.GetAsync(lobbyId, ct);
+        return lobby.GetPlayerGameState(userId);
+    }
+    
     public async Task<Guid> CreateLobbyAsync(CreateLobbyRequest request, CancellationToken ct)
     {
         // todo оплетку над стандартными исключениями eventStore и агрегатов

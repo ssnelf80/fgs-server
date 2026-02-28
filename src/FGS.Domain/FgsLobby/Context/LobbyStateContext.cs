@@ -1,4 +1,5 @@
-﻿using FGS.Domain.FgsLobby.Context.Requests;
+﻿using FGS.Domain.FgsLobby.Context.PlayerStates;
+using FGS.Domain.FgsLobby.Context.Requests;
 using FGS.Domain.FgsLobby.Context.States;
 using FGS.Domain.FgsLobby.Entities;
 using FGS.Domain.FgsLobby.Enums;
@@ -15,7 +16,10 @@ public class LobbyStateContext
     {
         TransitionTo(state);
     }
-    
+
+    public PlayerGameState GetPlayerGameState(Guid playerId) 
+        => _state.GetPlayerGameState(playerId);
+
     public void TransitionTo(LobbyState state)
     {
        _state = state;

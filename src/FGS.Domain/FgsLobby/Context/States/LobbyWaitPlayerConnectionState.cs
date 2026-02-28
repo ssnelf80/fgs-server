@@ -16,7 +16,7 @@ public class LobbyWaitPlayerConnectionState : LobbyState
 
     public override LobbyGameStateEnum GameState => LobbyGameStateEnum.WaitPlayers;
 
-    protected override PlayerGameState GetPlayerGameState(Guid userId)
+    public override PlayerGameState GetPlayerGameState(Guid userId)
     {
         var player = GetPlayer(userId);
         return new PlayerGameState

@@ -1,5 +1,6 @@
 ﻿using FGS.Domain.Base;
 using FGS.Domain.FgsLobby.Context;
+using FGS.Domain.FgsLobby.Context.PlayerStates;
 using FGS.Domain.FgsLobby.Entities;
 using FGS.Domain.FgsLobby.Enums;
 using FGS.Domain.FgsLobby.Events;
@@ -28,6 +29,9 @@ public sealed partial class Lobby : AggregateRoot<LobbyEvent>
         lobby.EmitEvent(new LobbyCreatedEvent(lobby.Id, name, masterUserId, lobbySettings, DateTimeOffset.UtcNow));
         return lobby;
     }
+
+    public PlayerGameState GetPlayerGameState(Guid playerId) 
+        => Context.GetPlayerGameState(playerId);
 
     public void SetBotToUser(Guid userId)
     {

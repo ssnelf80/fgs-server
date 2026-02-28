@@ -14,12 +14,19 @@ public class FgsViewModelRepository(
     ILogger<FgsViewModelRepository> logger
     ) : ViewModelRepositoryBase(db, logger), IFgsViewModelRepository
 {
-    public async Task<IReadOnlyCollection<LobbyEntity>> GetLobbyEntitiesListAsync(LobbyEntitySearchFilter searchFilter, CancellationToken cancellationToken) =>
-        await Context.Lobbies.Where(searchFilter.GetWhereExpression())
+    public async Task<IReadOnlyCollection<LobbyEntity>> GetLobbyEntitiesListAsync(LobbyEntitySearchFilter searchFilter, CancellationToken cancellationToken)
+    {
+        var query = Context.Lobbies.Where(searchFilter.GetWhereExpression());
+        if (searchFilter.StrictLobbyId != null)
+        {
+            query = query.Where(x => x.Id == searchFilter.StrictLobbyId.Value);
+        }
+        return await query
             .OrderByDescending(x => x.CreatedAt)
             .Skip(searchFilter.Offset)
             .Take(searchFilter.Limit)
             .ToListAsync(cancellationToken);
+    }
 
     public async Task<(ulong CommitPosition, ulong PreparePosition)?> GetCurrentLobbyStreamPositionAsync(CancellationToken cancellationToken)
     {

@@ -27,9 +27,6 @@ public class LobbyEntitySearchFilter : BaseSearchFilter<LobbyEntity>
             predicate.Or(x => x.Name.Contains(SearchString));
         }
         
-        if (StrictLobbyId.HasValue)
-            predicate.And(x => x.Id == StrictLobbyId.Value);
-        
         return predicate.GetExpression();
     }
 }

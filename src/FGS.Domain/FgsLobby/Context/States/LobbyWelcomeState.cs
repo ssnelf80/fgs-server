@@ -58,7 +58,7 @@ public sealed class LobbyWelcomeState : LobbyState
             Context.TransitionTo(GetNextGameState());
     }
     
-    protected override PlayerGameState GetPlayerGameState(Guid userId)
+    public override PlayerGameState GetPlayerGameState(Guid userId)
     {
         var player = GetPlayer(userId);
         return new PlayerGameState
