@@ -69,7 +69,7 @@ public sealed class LobbyWelcomeState : LobbyState
             InnerGameState = string.Empty,
             GameNumber = CurrentGameNumber,
             Choices = ConfirmationChoice,
-            SelectedChoices = ConfirmationChoice,
+            SelectedChoices = [],
             CanSendChoice = true,
             GameInfoMessage = LobbySettings.WelcomeMessage,
             RoundInfoMessage = string.Empty

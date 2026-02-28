@@ -31,7 +31,7 @@ public sealed class LobbyVoteState : LobbyState
         GoToNextGameIfNeeded();
     }
 
-    public override LobbyGameStateEnum GameState => LobbyGameStateEnum.InGame;
+    public override LobbyGameStateEnum GameState => LobbyGameStateEnum.Vote;
     public LobbyGameType GameType => LobbyGameType.Vote;
 
     public override void Handle(ILobbyContextRequest request)
@@ -240,9 +240,9 @@ public sealed class LobbyVoteState : LobbyState
             InnerGameState = _currentVoteStatus.ToString(),
             GameNumber = CurrentGameNumber,
             Choices = _currentVoteStatus == VoteStatus.Vote ? GetUserChoices(userId) : ConfirmationChoice,
-            SelectedChoices = _currentVoteStatus == VoteStatus.Vote 
+            SelectedChoices = _currentVoteStatus == VoteStatus.Vote && _playerConfirmations.Contains(userId)
                 ? _userChoicesMap[userId] 
-                : (_playerConfirmations.Contains(userId) ? ConfirmationChoice : []),
+                : [],
             CanSendChoice = true,
             GameInfoMessage = _globalSettings.GameDescription,
             RoundInfoMessage = string.Empty

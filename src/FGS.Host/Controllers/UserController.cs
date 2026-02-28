@@ -38,7 +38,7 @@ public class UserController(
     }
     
     [HttpGet]
-    [Route("connection/current")]
+    [Route("current/connection")]
     public async Task<ConnectionTrackerEntity?> GetCurrentUserConnectionOrDefaultAsync(CancellationToken cancellationToken)
     {
         var manager = (FgsUserManager)signInManager.UserManager;
