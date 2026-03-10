@@ -7,26 +7,32 @@ using FGS.Domain.FgsLobby.Exceptions;
 
 namespace FGS.Domain.FgsLobby.Context.States;
 
-public sealed class LobbyVoteState : LobbyState
+public sealed class LobbyVoteState : LobbyConfirmationBase
 {
-    public enum VoteStatus
+    private enum VoteStatus
     {
         Vote,
         ShowResult
     }
-
-    private VoteStatus _currentVoteStatus = VoteStatus.Vote;
+    private VoteStatus CurrentVoteStatus
+    {
+        get;
+        set
+        {
+            if (value == VoteStatus.ShowResult)
+                IsConfirmationMode = true;
+        }
+    } = VoteStatus.Vote;
     private const string SkipVariant = "SKIP";
     private readonly VoteGameSettings _globalSettings;
-    private Dictionary<Guid, VoteGameSettings> _userVoteGameSettingsMap = [];
+    private readonly Dictionary<Guid, VoteGameSettings> _userVoteGameSettingsMap = [];
     private readonly HashSet<Guid> _usersWithIndividualVoteGameSettings = [];
-    private readonly HashSet<Guid> _playerConfirmations = [];
     private readonly Dictionary<Guid, IReadOnlyCollection<string>> _userChoicesMap = [];
 
-    public LobbyVoteState(LobbyState other, IVoteSettings voteSettings) : base(other)
+    public LobbyVoteState(LobbyState other, IVoteSettings voteSettings) : base(other, false)
     {
         _globalSettings = voteSettings.VoteGameSettings;
-        InitUserGameSettings(voteSettings.VoteGameSettings);
+        InitUserGameSettings();
         DoBotActions();
         GoToNextGameIfNeeded();
     }
@@ -36,15 +42,18 @@ public sealed class LobbyVoteState : LobbyState
 
     public override void Handle(ILobbyContextRequest request)
     {
+        if (IsConfirmationMode)
+        {
+            base.Handle(request);
+            return;
+        }
+            
         switch (request)
         {
             case SetUserChoicesRequest userChoiceRequest when !IsPlayerExists(userChoiceRequest.UserId):
                 throw new LobbyStateException($"player with id = {userChoiceRequest.UserId} is not exist");
             case SetUserChoicesRequest { Choices.Length: 0 } userChoicesRequest:
-                if (_currentVoteStatus == VoteStatus.Vote)
                     _userChoicesMap.Remove(userChoicesRequest.UserId);
-                else
-                    _playerConfirmations.Remove(userChoicesRequest.UserId);
                 return;
             case SetUserChoicesRequest userChoicesRequest
                 when !userChoicesRequest.Choices.All(x => GetUserChoices(userChoicesRequest.UserId).Contains(x)):
@@ -54,39 +63,14 @@ public sealed class LobbyVoteState : LobbyState
                      userChoicesRequest.Choices.Length != 1:
                 throw new InvalidOperationLobbyStateException("User not support multiply choices");
             case SetUserChoicesRequest userChoicesRequest:
-                if (_currentVoteStatus == VoteStatus.Vote)
-                {
                     _userChoicesMap[userChoicesRequest.UserId] = userChoicesRequest.Choices;
-                    if (CanSetResult())
-                    {
-                        SetResult();
-                        DoBotActions();
-                    }
-                 
-                }
-                else
-                {
-                    _playerConfirmations.Add(userChoicesRequest.UserId);
-                    GoToNextGameIfNeeded();
-                }
-                break;
+                    SetResultIfNeeded();
+                    break;
             case SetRandomUserChoicesRequest randomChoiceRequest when !IsPlayerExists(randomChoiceRequest.UserId):
                 throw new LobbyStateException($"player with id = {randomChoiceRequest.UserId} is not exist");
             case SetRandomUserChoicesRequest rndUserChoicesRequest:
-                if (_currentVoteStatus == VoteStatus.Vote)
-                {
-                    _userChoicesMap[rndUserChoicesRequest.UserId] = GetUserRandomChoices(rndUserChoicesRequest.UserId);
-                    if (CanSetResult())
-                    {
-                        SetResult();
-                        DoBotActions();
-                    }
-                }
-                else
-                {
-                    _playerConfirmations.Add(rndUserChoicesRequest.UserId);
-                    GoToNextGameIfNeeded();
-                }
+                _userChoicesMap[rndUserChoicesRequest.UserId] = GetUserRandomChoices(rndUserChoicesRequest.UserId);
+                SetResultIfNeeded();
                 break;
             default:
                 base.Handle(request);
@@ -96,34 +80,37 @@ public sealed class LobbyVoteState : LobbyState
 
     protected override void DoBotActions()
     {
-        foreach (var player in BotPlayers())
+        if (IsConfirmationMode)
         {
-            if (_currentVoteStatus == VoteStatus.Vote)
-            {
-                _userChoicesMap[player.UserId] = GetUserRandomChoices(player.UserId);
-            }
-            else if (_currentVoteStatus == VoteStatus.ShowResult)
-            {
-                _playerConfirmations.Add(player.UserId);
-            }
+            base.DoBotActions();
         }
-
-        if (CanSetResult())
+        else
         {
-            SetResult();
-            DoBotActions();
+            foreach (var player in BotPlayers())
+                _userChoicesMap[player.UserId] = GetUserRandomChoices(player.UserId);
+            
+            SetResultIfNeeded();
         }
 
         GoToNextGameIfNeeded();
     }
 
-    private bool CanSetResult() => _currentVoteStatus == VoteStatus.Vote && _userChoicesMap.Count == Players().Count;
+    private void SetResultIfNeeded()
+    {
+        if (!CanSetResult()) 
+            return;
+        
+        SetResult();
+        DoBotActions();
+    }
+
+    private bool CanSetResult() => CurrentVoteStatus == VoteStatus.Vote && _userChoicesMap.Count == Players().Count;
 
     private void SetResult()
     {
         if (!CanSetResult())
             throw new InvalidOperationLobbyStateException(
-                $"can't set result: {_currentVoteStatus} and {_userChoicesMap.Count}/{Players().Count}");
+                $"can't set result: {CurrentVoteStatus} and {_userChoicesMap.Count}/{Players().Count}");
 
         var choicesCount = Players().ToDictionary(x => x.UserId, _ => 0);
         foreach (var choice in _userChoicesMap.Values.SelectMany(x => x))
@@ -148,7 +135,7 @@ public sealed class LobbyVoteState : LobbyState
         }
         finally
         {
-            _currentVoteStatus = VoteStatus.ShowResult;
+            CurrentVoteStatus = VoteStatus.ShowResult;
         }
     }
 
@@ -158,12 +145,12 @@ public sealed class LobbyVoteState : LobbyState
             ChangeBalance(winnerId, _userVoteGameSettingsMap[winnerId].WinnerReward.BalanceOperation);
     }
 
-    private void InitUserGameSettings(VoteGameSettings settings)
+    private void InitUserGameSettings()
     {
         foreach (var player in Players())
-            _userVoteGameSettingsMap.Add(player.UserId, settings);
+            _userVoteGameSettingsMap.Add(player.UserId, _globalSettings);
 
-        foreach (var individualSettings in settings.RandomIndividualVoteGameSettings)
+        foreach (var individualSettings in _globalSettings.RandomIndividualVoteGameSettings)
             SetIndividualVoteGameSettings(individualSettings);
     }
 
@@ -223,26 +210,30 @@ public sealed class LobbyVoteState : LobbyState
         return result;
     }
 
-    private void GoToNextGameIfNeeded()
+    protected override void GoToNextGameIfNeeded()
     {
-        if (_playerConfirmations.Count == Players().Count && _currentVoteStatus == VoteStatus.ShowResult)
+        if (CurrentVoteStatus == VoteStatus.ShowResult && IsConfirmed())
             Context.TransitionTo(GetNextGameState());
     }
     
     public override PlayerGameState GetPlayerGameState(Guid userId)
     {
         var player = GetPlayer(userId);
+        IReadOnlyCollection<string> selectedChoices = [];
+        if (CurrentVoteStatus == VoteStatus.Vote && _userChoicesMap.TryGetValue(userId, out var value))
+            selectedChoices = value;
+        else if (CurrentVoteStatus == VoteStatus.ShowResult && IsPlayerConfirm(userId))
+            selectedChoices = ["y"];
+        
         return new PlayerGameState
         {
             Balance = player.Balance,
             PlayerRole = player.Role,
             GameState = GameState,
-            InnerGameState = _currentVoteStatus.ToString(),
+            InnerGameState = CurrentVoteStatus.ToString(),
             GameNumber = CurrentGameNumber,
-            Choices = _currentVoteStatus == VoteStatus.Vote ? GetUserChoices(userId) : ConfirmationChoice,
-            SelectedChoices = _currentVoteStatus == VoteStatus.Vote && _playerConfirmations.Contains(userId)
-                ? _userChoicesMap[userId] 
-                : [],
+            Choices = CurrentVoteStatus == VoteStatus.Vote ? GetUserChoices(userId) : ConfirmationChoice,
+            SelectedChoices = selectedChoices,
             CanSendChoice = true,
             GameInfoMessage = _globalSettings.GameDescription,
             RoundInfoMessage = string.Empty
