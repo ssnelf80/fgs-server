@@ -56,7 +56,7 @@ public sealed class LobbyVoteState : LobbyConfirmationBase
                     _userChoicesMap.Remove(userChoicesRequest.UserId);
                 return;
             case SetUserChoicesRequest userChoicesRequest
-                when !userChoicesRequest.Choices.All(x => GetUserChoices(userChoicesRequest.UserId).Contains(x)):
+                when !userChoicesRequest.Choices.All(choice => GetValidUserChoices(userChoicesRequest.UserId).Contains(choice)):
                 throw new InvalidOperationLobbyStateException("Invalid user choice");
             case SetUserChoicesRequest userChoicesRequest
                 when !_userVoteGameSettingsMap[userChoicesRequest.UserId].MultiplyChoice &&
@@ -170,7 +170,7 @@ public sealed class LobbyVoteState : LobbyConfirmationBase
             .OrderBy(x => x.UserId)
             .ToList());
 
-    private IReadOnlyList<string> GetUserChoices(Guid userId)
+    private IReadOnlyList<string> GetValidUserChoices(Guid userId)
     {
         List<string> variants = [];
         var settings = _userVoteGameSettingsMap[userId];
@@ -189,7 +189,7 @@ public sealed class LobbyVoteState : LobbyConfirmationBase
     private IReadOnlyList<string> GetUserRandomChoices(Guid userId)
     {
         List<string> result = [];
-        var variants = GetUserChoices(userId);
+        var variants = GetValidUserChoices(userId);
         if (!_userVoteGameSettingsMap[userId].MultiplyChoice)
         {
             result.Add(variants[Random.Next(0, variants.Count)]);
@@ -232,7 +232,7 @@ public sealed class LobbyVoteState : LobbyConfirmationBase
             GameState = GameState,
             InnerGameState = CurrentVoteStatus.ToString(),
             GameNumber = CurrentGameNumber,
-            Choices = CurrentVoteStatus == VoteStatus.Vote ? GetUserChoices(userId) : ConfirmationChoice,
+            Choices = CurrentVoteStatus == VoteStatus.Vote ? GetValidUserChoices(userId) : ConfirmationChoice,
             SelectedChoices = selectedChoices,
             CanSendChoice = true,
             GameInfoMessage = _globalSettings.GameDescription,
