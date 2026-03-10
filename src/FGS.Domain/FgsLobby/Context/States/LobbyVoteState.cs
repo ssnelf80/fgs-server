@@ -42,7 +42,7 @@ public sealed class LobbyVoteState : LobbyConfirmationBase
 
     public override void Handle(ILobbyContextRequest request)
     {
-        if (IsConfirmationMode)
+        if (CurrentVoteStatus == VoteStatus.ShowResult)
         {
             base.Handle(request);
             return;

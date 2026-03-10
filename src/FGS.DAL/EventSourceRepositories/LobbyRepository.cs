@@ -48,7 +48,7 @@ public class LobbyRepository(
         aggregate.CommitEvents();
     }
 
-    public IEnumerable<EventData> GetEventDataList(Lobby aggregate)
+    private IEnumerable<EventData> GetEventDataList(Lobby aggregate)
     {
         foreach (var e in aggregate.Events)
            yield return new EventData(Uuid.NewUuid(), e.GetType().Name, jsonConvert.Serialize(e));

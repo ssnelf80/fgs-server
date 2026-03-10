@@ -3,16 +3,11 @@ using FGS.Domain.FgsLobby.Exceptions;
 
 namespace FGS.Domain.FgsLobby.Context.States;
 
-public abstract class LobbyConfirmationBase : LobbyState
+public abstract class LobbyConfirmationBase(LobbyState other, bool isConfirmationMode) : LobbyState(other)
 {
-    protected bool IsConfirmationMode { get; set; }
+    protected bool IsConfirmationMode { get; set; } = isConfirmationMode;
     private readonly HashSet<Guid> _playerConfirmations = [];
-    
-    protected LobbyConfirmationBase(LobbyState other, bool isConfirmationMode) : base(other)
-    {
-        IsConfirmationMode = isConfirmationMode;
-    }
-    
+
     protected bool IsPlayerConfirm(Guid userId) => _playerConfirmations.Contains(userId);
     
     protected bool IsConfirmed() => _playerConfirmations.Count == Players().Count;
