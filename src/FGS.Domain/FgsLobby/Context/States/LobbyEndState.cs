@@ -1,27 +1,23 @@
 ﻿using FGS.Domain.FgsLobby.Context.PlayerStates;
+using FGS.Domain.FgsLobby.Context.PlayerStates.GameStates;
 using FGS.Domain.FgsLobby.Enums;
-using FGS.Domain.FgsLobby.Exceptions;
 
 namespace FGS.Domain.FgsLobby.Context.States;
 
 public class LobbyEndState(LobbyState other) : LobbyState(other)
 {
-    public override LobbyGameStateEnum GameState => LobbyGameStateEnum.EndState;
-    public override PlayerGameState GetPlayerGameState(Guid userId)
+    public override LobbyGameStateTypeEnum GameState => LobbyGameStateTypeEnum.End;
+    public override PlayerStateWrapper GetPlayerGameState(Guid userId)
     {
         var player = GetPlayer(userId);
-        return new PlayerGameState
+        return new PlayerStateWrapper
         {
             Balance = player.Balance,
             PlayerRole = player.Role,
-            GameState = GameState,
-            InnerGameState = string.Empty,
+            LobbyGameType = GameState,
+            GameState = EmptyState.Instance,
             GameNumber = CurrentGameNumber,
-            Choices = [],
-            SelectedChoices = [],
-            CanSendChoice = false,
-            GameInfoMessage = "Игра завершена",
-            RoundInfoMessage = string.Empty
+            Message = "Игра завершена"
         };
     }
 }

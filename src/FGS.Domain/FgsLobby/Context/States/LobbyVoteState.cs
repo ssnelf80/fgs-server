@@ -1,5 +1,6 @@
 ﻿using FGS.Domain.FgsLobby.Context.GameSettings;
 using FGS.Domain.FgsLobby.Context.PlayerStates;
+using FGS.Domain.FgsLobby.Context.PlayerStates.GameStates;
 using FGS.Domain.FgsLobby.Context.Requests;
 using FGS.Domain.FgsLobby.Entities;
 using FGS.Domain.FgsLobby.Enums;
@@ -37,7 +38,7 @@ public sealed class LobbyVoteState : LobbyConfirmationBase
         GoToNextGameIfNeeded();
     }
 
-    public override LobbyGameStateEnum GameState => LobbyGameStateEnum.Vote;
+    public override LobbyGameStateTypeEnum GameState => LobbyGameStateTypeEnum.Vote;
     public LobbyGameType GameType => LobbyGameType.Vote;
 
     public override void Handle(ILobbyContextRequest request)
@@ -59,7 +60,7 @@ public sealed class LobbyVoteState : LobbyConfirmationBase
                 when !userChoicesRequest.Choices.All(choice => GetValidUserChoices(userChoicesRequest.UserId).Contains(choice)):
                 throw new InvalidOperationLobbyStateException("Invalid user choice");
             case SetUserChoicesRequest userChoicesRequest
-                when !_userVoteGameSettingsMap[userChoicesRequest.UserId].MultiplyChoice &&
+                when !_userVoteGameSettingsMap[userChoicesRequest.UserId].CanMultiplyChoice &&
                      userChoicesRequest.Choices.Length != 1:
                 throw new InvalidOperationLobbyStateException("User not support multiply choices");
             case SetUserChoicesRequest userChoicesRequest:
@@ -93,6 +94,13 @@ public sealed class LobbyVoteState : LobbyConfirmationBase
         }
 
         GoToNextGameIfNeeded();
+    }
+
+    private IReadOnlyCollection<string> GetUserSelectedChoices(Guid userId)
+    {
+        if (_userChoicesMap.TryGetValue(userId, out var choices))
+            return choices;
+        return [];
     }
 
     private void SetResultIfNeeded()
@@ -190,7 +198,7 @@ public sealed class LobbyVoteState : LobbyConfirmationBase
     {
         List<string> result = [];
         var variants = GetValidUserChoices(userId);
-        if (!_userVoteGameSettingsMap[userId].MultiplyChoice)
+        if (!_userVoteGameSettingsMap[userId].CanMultiplyChoice)
         {
             result.Add(variants[Random.Next(0, variants.Count)]);
         }
@@ -216,27 +224,42 @@ public sealed class LobbyVoteState : LobbyConfirmationBase
             Context.TransitionTo(GetNextGameState());
     }
     
-    public override PlayerGameState GetPlayerGameState(Guid userId)
+    public override PlayerStateWrapper GetPlayerGameState(Guid userId)
     {
         var player = GetPlayer(userId);
-        IReadOnlyCollection<string> selectedChoices = [];
-        if (CurrentVoteStatus == VoteStatus.Vote && _userChoicesMap.TryGetValue(userId, out var value))
-            selectedChoices = value;
-        else if (CurrentVoteStatus == VoteStatus.ShowResult && IsPlayerConfirm(userId))
-            selectedChoices = ["y"];
-        
-        return new PlayerGameState
+        var individualSettings = _userVoteGameSettingsMap[userId];
+      
+        return CurrentVoteStatus switch
         {
-            Balance = player.Balance,
-            PlayerRole = player.Role,
-            GameState = GameState,
-            InnerGameState = CurrentVoteStatus.ToString(),
-            GameNumber = CurrentGameNumber,
-            Choices = CurrentVoteStatus == VoteStatus.Vote ? GetValidUserChoices(userId) : ConfirmationChoice,
-            SelectedChoices = selectedChoices,
-            CanSendChoice = true,
-            GameInfoMessage = _globalSettings.GameDescription,
-            RoundInfoMessage = string.Empty
+            VoteStatus.Vote => new PlayerStateWrapper
+            {
+                Balance = player.Balance,
+                PlayerRole = player.Role,
+                LobbyGameType = GameState,
+                GameNumber = CurrentGameNumber,
+                Message = _globalSettings.GameDescription,
+                GameState =
+                    new VoteState
+                    {
+                        CanMultiplyChoice = individualSettings.CanMultiplyChoice,
+                        CanSelfChoice = individualSettings.CanSelfChoice,
+                        EnabledChoices = GetValidUserChoices(userId),
+                        SelectedChoices = GetUserSelectedChoices(userId),
+                        IndividualDescription = individualSettings.IndividualDescription,
+                    }
+            },
+            VoteStatus.ShowResult => new PlayerStateWrapper
+            {
+                Balance = player.Balance,
+                PlayerRole = player.Role,
+                LobbyGameType = GameState,
+                GameNumber = CurrentGameNumber,
+                Message = _globalSettings.GameDescription,
+                GameState =
+                    new ConfirmationState(
+                        IsPlayerConfirm(userId)) // todo {nazarov} нужен отдельный тип для показа результата
+            },
+            _ => throw new InvalidOperationLobbyStateException($"Unknown CurrentVoteStatus: {CurrentVoteStatus}")
         };
     }
 }

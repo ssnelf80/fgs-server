@@ -10,7 +10,7 @@ public record VoteGameSettings
         GameDescription = "Голосование блабла",
         CanSkip = false,
         CanSelfChoice = false,
-        MultiplyChoice = false,
+        CanMultiplyChoice = false,
         MultipleWinner = false,
         WinnerReward = new WinnerReward
         {
@@ -23,7 +23,7 @@ public record VoteGameSettings
     public required string GameDescription { get; init; }
     public required bool CanSkip { get; init; }
     public required bool CanSelfChoice { get; init; }
-    public required bool MultiplyChoice  { get; init; } 
+    public required bool CanMultiplyChoice  { get; init; } 
     public required bool MultipleWinner { get; init; }
     public required WinnerReward WinnerReward { get; init; }
     public required string? IndividualDescription { get; init; } = null!;

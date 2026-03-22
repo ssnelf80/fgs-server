@@ -1,4 +1,5 @@
 ﻿using FGS.Domain.FgsLobby.Context.PlayerStates;
+using FGS.Domain.FgsLobby.Context.PlayerStates.GameStates;
 using FGS.Domain.FgsLobby.Context.Requests;
 using FGS.Domain.FgsLobby.Entities;
 using FGS.Domain.FgsLobby.Enums;
@@ -14,23 +15,19 @@ public class LobbyWaitPlayerConnectionState : LobbyState
         InitRandom(lobbySettings.RandomizerSeed);
     }
 
-    public override LobbyGameStateEnum GameState => LobbyGameStateEnum.WaitPlayers;
+    public override LobbyGameStateTypeEnum GameState => LobbyGameStateTypeEnum.WaitPlayers;
 
-    public override PlayerGameState GetPlayerGameState(Guid userId)
+    public override PlayerStateWrapper GetPlayerGameState(Guid userId)
     {
         var player = GetPlayer(userId);
-        return new PlayerGameState
+        return new PlayerStateWrapper
         {
             Balance = player.Balance,
             PlayerRole = player.Role,
-            GameState = GameState,
-            InnerGameState = string.Empty,
+            LobbyGameType = GameState,
             GameNumber = CurrentGameNumber,
-            Choices = ConfirmationChoice,
-            SelectedChoices = ConfirmationChoice,
-            CanSendChoice = true,
-            GameInfoMessage = $"Ожидание других игроков: {Players().Count}/{LobbySettings.PlayersCount}",
-            RoundInfoMessage = string.Join(",", Players().Select(x=> x.UserId))
+            Message = "Ожидание других игроков",
+            GameState = new WaitPlayerConnectionState(LobbySettings.PlayersCount, Players().Select(x=> x.UserId).ToList())
         };
     }
 

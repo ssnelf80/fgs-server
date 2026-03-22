@@ -26,7 +26,7 @@ public class LobbyController(SignInManager<FgsUser> signInManager, LobbyAppServi
 
     [HttpGet]
     [Route("{lobbyId}/game-state")]
-    public async Task<PlayerGameState> GetPlayerGameState(Guid lobbyId, CancellationToken cancellationToken)
+    public async Task<PlayerStateWrapper> GetPlayerGameState(Guid lobbyId, CancellationToken cancellationToken)
     {
         var user = await signInManager.UserManager.GetUserAsync(User);
         return await lobbyAppService.GetPlayerGameStateAsync(lobbyId, Guid.Parse(user!.Id), cancellationToken);

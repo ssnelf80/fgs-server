@@ -1,4 +1,5 @@
 ﻿using FGS.Domain.FgsLobby.Context.PlayerStates;
+using FGS.Domain.FgsLobby.Context.PlayerStates.GameStates;
 using FGS.Domain.FgsLobby.Enums;
 
 namespace FGS.Domain.FgsLobby.Context.States;
@@ -11,7 +12,7 @@ public sealed class LobbyWelcomeState : LobbyConfirmationBase
         GoToNextGameIfNeeded();
     }
 
-    public override LobbyGameStateEnum GameState => LobbyGameStateEnum.GameWelcomeInformation;
+    public override LobbyGameStateTypeEnum GameState => LobbyGameStateTypeEnum.GameWelcomeInformation;
 
     protected override void GoToNextGameIfNeeded()
     {
@@ -19,21 +20,17 @@ public sealed class LobbyWelcomeState : LobbyConfirmationBase
             Context.TransitionTo(GetNextGameState());
     }
     
-    public override PlayerGameState GetPlayerGameState(Guid userId)
+    public override PlayerStateWrapper GetPlayerGameState(Guid userId)
     {
         var player = GetPlayer(userId);
-        return new PlayerGameState
+        return new PlayerStateWrapper
         {
             Balance = player.Balance,
             PlayerRole = player.Role,
-            GameState = GameState,
-            InnerGameState = string.Empty,
+            LobbyGameType = GameState,
             GameNumber = CurrentGameNumber,
-            Choices = ConfirmationChoice,
-            SelectedChoices = [],
-            CanSendChoice = true,
-            GameInfoMessage = LobbySettings.WelcomeMessage,
-            RoundInfoMessage = string.Empty
+            Message = LobbySettings.WelcomeMessage,
+            GameState = new ConfirmationState(IsPlayerConfirm(userId))
         };
     }
 }

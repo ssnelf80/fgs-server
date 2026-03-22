@@ -1,4 +1,5 @@
 ﻿using FGS.Domain.FgsLobby.Context.PlayerStates;
+using FGS.Domain.FgsLobby.Context.PlayerStates.GameStates;
 using FGS.Domain.FgsLobby.Context.Requests;
 using FGS.Domain.FgsLobby.Enums;
 using FGS.Domain.FgsLobby.Exceptions;
@@ -7,7 +8,7 @@ namespace FGS.Domain.FgsLobby.Context.States;
 
 public class LobbyInitializeState(LobbyState other) : LobbyState(other)
 {
-    public override LobbyGameStateEnum GameState => LobbyGameStateEnum.ReadyToInitialize;
+    public override LobbyGameStateTypeEnum GameState => LobbyGameStateTypeEnum.ReadyToInitialize;
 
     public override void Handle(ILobbyContextRequest request)
     {
@@ -40,21 +41,17 @@ public class LobbyInitializeState(LobbyState other) : LobbyState(other)
             UpdatePlayer(player with { Balance = LobbySettings.StartBalance });
     }
     
-    public override PlayerGameState GetPlayerGameState(Guid userId)
+    public override PlayerStateWrapper GetPlayerGameState(Guid userId)
     {
         var player = GetPlayer(userId);
-        return new PlayerGameState
+        return new PlayerStateWrapper
         {
             Balance = player.Balance,
             PlayerRole = player.Role,
-            GameState = GameState,
-            InnerGameState = string.Empty,
+            LobbyGameType = GameState,
+            GameState = EmptyState.Instance,
             GameNumber = CurrentGameNumber,
-            Choices = [],
-            SelectedChoices = [],
-            CanSendChoice = false,
-            GameInfoMessage = "Инициализация игры, ожидайте",
-            RoundInfoMessage = string.Empty
+            Message = "Инициализация игры, ожидайте"
         };
     }
 }

@@ -1,11 +1,11 @@
 ﻿namespace FGS.Domain.FgsLobby.Enums;
 
-public enum LobbyGameStateEnum
+public enum LobbyGameStateTypeEnum
 {
     Unknown,
     WaitPlayers,
     ReadyToInitialize,
     GameWelcomeInformation,
     Vote,
-    EndState
+    End
 }

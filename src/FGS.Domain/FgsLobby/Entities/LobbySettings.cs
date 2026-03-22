@@ -22,7 +22,7 @@ public record LobbySettings
                     {
                         CanSkip = true,
                         CanSelfChoice = false,
-                        MultiplyChoice = false,
+                        CanMultiplyChoice = false,
                         MultipleWinner = false,
                         IndividualDescription = null,
                         WinnerReward = new WinnerReward
@@ -31,7 +31,7 @@ public record LobbySettings
                         },
                         RandomIndividualVoteGameSettings =
                         [
-                            VoteGameSettings.Default with { MultiplyChoice = true}
+                            VoteGameSettings.Default with { CanMultiplyChoice = true, IndividualDescription = "В этом голосовании Вы можете выбрать нескольких игроков"}
                         ],
                         GameDescription = "Голосование описание ляляляля"
                     }

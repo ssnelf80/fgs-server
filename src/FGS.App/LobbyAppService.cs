@@ -31,7 +31,7 @@ public class LobbyAppService(
         await lobbyRepository.SaveAsync(lobby, ct);
     }
     
-    public async Task<PlayerGameState> GetPlayerGameStateAsync(Guid lobbyId, Guid userId, CancellationToken ct)
+    public async Task<PlayerStateWrapper> GetPlayerGameStateAsync(Guid lobbyId, Guid userId, CancellationToken ct)
     {
         var lobby = await lobbyRepository.GetAsync(lobbyId, ct);
         return lobby.GetPlayerGameState(userId);

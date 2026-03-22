@@ -30,13 +30,13 @@ public sealed partial class Lobby : AggregateRoot<LobbyEvent>
         return lobby;
     }
 
-    public PlayerGameState GetPlayerGameState(Guid playerId) 
+    public PlayerStateWrapper GetPlayerGameState(Guid playerId) 
         => Context.GetPlayerGameState(playerId);
 
     public void SetBotToUser(Guid userId)
     {
         EmitEvent(new SetBotToPlayerLobbyEvent(Id, userId));
-        if (Context.Status == LobbyGameStateEnum.EndState)
+        if (Context.Status == LobbyGameStateTypeEnum.End)
             EmitEvent(new LobbyStatusChangedEvent(Id, LobbyStatus.Closed));
     }
 
@@ -48,14 +48,14 @@ public sealed partial class Lobby : AggregateRoot<LobbyEvent>
     public void SetUserChoice(Guid userId, params string[] choices)
     {
         EmitEvent(new LobbySetUserChoiceEvent(Id, userId, choices));
-        if (Context.Status == LobbyGameStateEnum.EndState)
+        if (Context.Status == LobbyGameStateTypeEnum.End)
             EmitEvent(new LobbyStatusChangedEvent(Id, LobbyStatus.Closed));
     }
     
     public void SetRandomUserChoice(Guid userId)
     {
         EmitEvent(new LobbySetUserRandomChoiceEvent(Id, userId));
-        if (Context.Status == LobbyGameStateEnum.EndState)
+        if (Context.Status == LobbyGameStateTypeEnum.End)
             EmitEvent(new LobbyStatusChangedEvent(Id, LobbyStatus.Closed));
     }
     
@@ -65,9 +65,9 @@ public sealed partial class Lobby : AggregateRoot<LobbyEvent>
     {
         EmitEvent(new PlayerConnectedLobbyEvent(Id, userId, false));
         
-        if (Context.Status != LobbyGameStateEnum.WaitPlayers)
+        if (Context.Status != LobbyGameStateTypeEnum.WaitPlayers)
             EmitEvent(new LobbyStatusChangedEvent(Id, LobbyStatus.InProgress));
-        if (Context.Status == LobbyGameStateEnum.EndState)
+        if (Context.Status == LobbyGameStateTypeEnum.End)
             EmitEvent(new LobbyStatusChangedEvent(Id, LobbyStatus.Closed));
     }
     
@@ -75,9 +75,9 @@ public sealed partial class Lobby : AggregateRoot<LobbyEvent>
     {
         EmitEvent(new PlayerConnectedLobbyEvent(Id, botId, true));
         
-        if (Context.Status != LobbyGameStateEnum.WaitPlayers)
+        if (Context.Status != LobbyGameStateTypeEnum.WaitPlayers)
             EmitEvent(new LobbyStatusChangedEvent(Id, LobbyStatus.InProgress));
-        if (Context.Status == LobbyGameStateEnum.EndState)
+        if (Context.Status == LobbyGameStateTypeEnum.End)
             EmitEvent(new LobbyStatusChangedEvent(Id, LobbyStatus.Closed));
     }
 

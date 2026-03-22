@@ -10,14 +10,14 @@ public class LobbyStateContext
 {
     private LobbyState _state = null!;
     
-    public LobbyGameStateEnum Status => _state.GameState;
+    public LobbyGameStateTypeEnum Status => _state.GameState;
 
     private LobbyStateContext(LobbyState state)
     {
         TransitionTo(state);
     }
 
-    public PlayerGameState GetPlayerGameState(Guid playerId) 
+    public PlayerStateWrapper GetPlayerGameState(Guid playerId) 
         => _state.GetPlayerGameState(playerId);
 
     public void TransitionTo(LobbyState state)

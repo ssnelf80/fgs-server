@@ -13,7 +13,7 @@ public abstract class LobbyState
     private LobbyStateContext? _context;
     protected LobbyStateContext Context => _context ?? throw new InvalidInnerCallLobbyStateException("Context is not initialized");
     
-    public abstract LobbyGameStateEnum GameState { get; }
+    public abstract LobbyGameStateTypeEnum GameState { get; }
 
     private const int GamesNotStarted = -1;
     private int _currentGameNumber = GamesNotStarted;
@@ -86,7 +86,7 @@ public abstract class LobbyState
         return new LobbyEndState(this);
     }
 
-    public abstract PlayerGameState GetPlayerGameState(Guid userId);
+    public abstract PlayerStateWrapper GetPlayerGameState(Guid userId);
 
     protected void ChangeBalance(Guid userId, BalanceOperation balanceOperation)
     {
