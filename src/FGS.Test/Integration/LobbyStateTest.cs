@@ -55,7 +55,6 @@ public class LobbyStateTests : IClassFixture<WebApplicationFactory<Program>>
        lobby = await lobbyRepository.GetAsync(lobbyId, ct);
        // голосование
        await lobbyAppService.SendRandomUserChoiceToLobbyAsync(lobbyId, user1, ct);
-       // todo не применяется в esdb ?!
        await lobbyAppService.SendRandomUserChoiceToLobbyAsync(lobbyId, user2, ct);
        lobby = await lobbyRepository.GetAsync(lobbyId, ct);
        // подтверждение результатов
