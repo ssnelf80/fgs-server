@@ -62,6 +62,7 @@ public class LobbyStateTests : IClassFixture<WebApplicationFactory<Program>>
        await lobbyAppService.SendRandomUserChoiceToLobbyAsync(lobbyId, user1, ct);
        await lobbyAppService.SendRandomUserChoiceToLobbyAsync(lobbyId, user2, ct);
        lobby = await lobbyRepository.GetAsync(lobbyId, ct);
+       
        Assert.True(lobby.Status == LobbyStatus.Closed);
     }
 

@@ -22,6 +22,8 @@ public sealed class LobbyVoteState : LobbyConfirmationBase
         {
             if (value == VoteStatus.ShowResult)
                 IsConfirmationMode = true;
+
+            field = value;
         }
     } = VoteStatus.Vote;
     private const string SkipVariant = "SKIP";

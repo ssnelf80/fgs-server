@@ -2,6 +2,7 @@
   <Folder Name="/common/">
     <File Path=".gitignore" />
     <File Path="Directory.Packages.props" />
+    <File Path="docker-compose.yml" />
   </Folder>
   <Project Path="src/FGS.Adapters/FGS.Adapters.csproj" />
   <Project Path="src/FGS.App/FGS.App.csproj" />
