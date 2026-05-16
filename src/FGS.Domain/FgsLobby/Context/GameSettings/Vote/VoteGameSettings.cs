@@ -2,11 +2,11 @@
 using FGS.Domain.FgsLobby.Entities;
 using FGS.Domain.FgsLobby.Enums;
 
-namespace FGS.Domain.FgsLobby.Context.GameSettings;
+namespace FGS.Domain.FgsLobby.Context.GameSettings.Vote;
 
-public record VoteGameSettings : IGameSettings<VoteGameSettings>
+public record VoteGameSettings : IGameSettings<VoteGameSettings, PlayerVoteGameSettings>
 {
-    public static VoteGameSettings Default => new VoteGameSettings
+    public static VoteGameSettings Default => new()
     {
         GameDescription = "Голосование блабла",
         CanSkip = false,
@@ -18,7 +18,7 @@ public record VoteGameSettings : IGameSettings<VoteGameSettings>
            BalanceOperation = new BalanceOperation(BalanceOperationType.Addition, 25_000)
         },
         IndividualDescription = null,
-        RandomIndividualVoteGameSettings = []
+        RandomLocalVoteGameSettings = []
     };
 
     public required string GameDescription { get; init; }
@@ -28,9 +28,18 @@ public record VoteGameSettings : IGameSettings<VoteGameSettings>
     public required bool MultipleWinner { get; init; }
     public required WinnerReward WinnerReward { get; init; }
     public required string? IndividualDescription { get; init; } = null!;
-    public required IReadOnlyList<VoteGameSettings> RandomIndividualVoteGameSettings { get; init; }
+    public required IReadOnlyList<PlayerVoteGameSettings> RandomLocalVoteGameSettings { get; init; }
+    
     [JsonIgnore]
     public VoteGameSettings GlobalGameSettings => this;
+
     [JsonIgnore]
-    public IReadOnlyList<VoteGameSettings> RandomIndividualGameSettings => RandomIndividualVoteGameSettings;
+    public PlayerVoteGameSettings DefaultPlayerSettings => new()
+    {
+        Description = null,
+        CanSkip = CanSkip,
+        CanSelfChoice = CanSelfChoice,
+        CanMultiplyChoice = CanMultiplyChoice,
+        WinnerReward =  WinnerReward
+    };
 }

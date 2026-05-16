@@ -1,5 +1,5 @@
 ﻿using FGS.Domain.Base;
-using FGS.Domain.FgsLobby.Context.GameSettings;
+using FGS.Domain.FgsLobby.Context.GameSettings.Vote;
 using FGS.Domain.FgsLobby.Context.PlayerStates;
 using FGS.Domain.FgsLobby.Context.PlayerStates.GameStates;
 using FGS.Domain.FgsLobby.Context.Requests;
@@ -9,8 +9,8 @@ using FGS.Domain.FgsLobby.Exceptions;
 
 namespace FGS.Domain.FgsLobby.Context.States;
 
-public sealed class LobbyVoteState(LobbyState other, IGameSettings<VoteGameSettings> gameSettings)
-    : LobbyGameBase<VoteGameSettings>(other, gameSettings)
+public sealed class LobbyVoteState(LobbyState other, VoteGameSettings gameSettings)
+    : LobbyGameBase<VoteGameSettings, PlayerVoteGameSettings>(other, gameSettings)
 {
     private const string SkipVariant = "SKIP";
 
@@ -37,7 +37,7 @@ public sealed class LobbyVoteState(LobbyState other, IGameSettings<VoteGameSetti
                         CanSelfChoice = individualSettings.CanSelfChoice,
                         EnabledChoices = GetValidUserChoices(userId),
                         SelectedChoices = GetUserSelectedChoices(userId),
-                        IndividualDescription = individualSettings.IndividualDescription,
+                        IndividualDescription = individualSettings.Description,
                     }
             },
             GameStatus.ShowResult => new PlayerStateWrapper
@@ -79,7 +79,7 @@ public sealed class LobbyVoteState(LobbyState other, IGameSettings<VoteGameSetti
         return result;
     }
 
-    protected override void SetResult()
+    protected override GameStatus SetResult()
     {
         var choicesCount = Players().ToDictionary(x => x.UserId, _ => 0);
         foreach (var choice in UserChoicesMap.Values.SelectMany(x => x))
@@ -96,10 +96,18 @@ public sealed class LobbyVoteState(LobbyState other, IGameSettings<VoteGameSetti
             .ToList();
 
         if (choicesCount[winnersIds[0]] == 0) // у победителя ноль голосов
-            return;
+            return GameStatus.ShowResult;
         if (!GameSettings.GlobalGameSettings.MultipleWinner && winnersIds.Count > 1) // несколько победителей
-            return;
+            return GameStatus.ShowResult;
+        
         ApplyWinnerReward(winnersIds);
+        return GameStatus.ShowResult;
+    }
+
+    protected override void RoundSetLocalSettings()
+    {
+        foreach (var localVoteGameSetting in GameSettings.GlobalGameSettings.RandomLocalVoteGameSettings)
+            SetLocalPlayerSettings(localVoteGameSetting);
     }
 
     protected override ValidationResult Validate(SetUserChoicesRequest request)
@@ -134,12 +142,5 @@ public sealed class LobbyVoteState(LobbyState other, IGameSettings<VoteGameSetti
             .Select(x => x.UserId.ToString()));
 
         return variants;
-    }
-
-    private IReadOnlyCollection<string> GetUserSelectedChoices(Guid userId)
-    {
-        if (UserChoicesMap.TryGetValue(userId, out var choices))
-            return choices;
-        return [];
     }
 }

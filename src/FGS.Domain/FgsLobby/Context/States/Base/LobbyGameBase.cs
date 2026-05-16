@@ -6,8 +6,10 @@ using FGS.Domain.FgsLobby.Exceptions;
 
 namespace FGS.Domain.FgsLobby.Context.States.Base;
 
-public abstract class LobbyGameBase<TGameSettings> : LobbyConfirmationBase
+public abstract class LobbyGameBase<TGameSettings, TPlayerSettings> : LobbyConfirmationBase
 {
+    protected int RoundNumber { get; set; } = 0;
+
     protected enum GameStatus
     {
         InGame,
@@ -26,11 +28,11 @@ public abstract class LobbyGameBase<TGameSettings> : LobbyConfirmationBase
     } = GameStatus.InGame;
     
     protected readonly Dictionary<Guid, IReadOnlyList<string>> UserChoicesMap = [];
-    protected readonly IGameSettings<TGameSettings> GameSettings;
-    protected readonly Dictionary<Guid, TGameSettings> UserGameSettingsMap = [];
+    protected readonly IGameSettings<TGameSettings, TPlayerSettings> GameSettings;
+    protected readonly Dictionary<Guid, TPlayerSettings> UserGameSettingsMap = [];
     protected readonly HashSet<Guid> UsersWithIndividualGameSettings = [];
 
-    protected LobbyGameBase(LobbyState other, IGameSettings<TGameSettings> gameSettings) : base(other, false)
+    protected LobbyGameBase(LobbyState other, IGameSettings<TGameSettings, TPlayerSettings> gameSettings) : base(other, false)
     {
         GameSettings = gameSettings;
         InitUserGameSettings();
@@ -66,16 +68,23 @@ public abstract class LobbyGameBase<TGameSettings> : LobbyConfirmationBase
         DoBotActions();
     }
     
-    protected abstract void SetResult();
+    protected abstract GameStatus SetResult();
     
     private void InnerSetResult()
     {
         if (!CanSetResult())
             throw new InvalidOperationLobbyStateException(
                 $"can't set result: {CurrentGameStatus} and {UserChoicesMap.Count}/{Players().Count}");
+        
+        CurrentGameStatus = SetResult();
 
-        SetResult();
-        CurrentGameStatus = GameStatus.ShowResult;
+        if (CurrentGameStatus == GameStatus.InGame)
+        {
+            RoundNumber++;
+            UserGameSettingsMap.Clear();
+            UserChoicesMap.Clear();
+            InitUserGameSettings();
+        }
     }
 
     private bool CanSetResult() => CurrentGameStatus == GameStatus.InGame && UserChoicesMap.Count == Players().Count;
@@ -83,23 +92,24 @@ public abstract class LobbyGameBase<TGameSettings> : LobbyConfirmationBase
     private void InitUserGameSettings()
     {
         foreach (var player in Players())
-            UserGameSettingsMap.Add(player.UserId, GameSettings.GlobalGameSettings);
+            UserGameSettingsMap.Add(player.UserId, GameSettings.DefaultPlayerSettings);
 
-        foreach (var individualSettings in GameSettings.RandomIndividualGameSettings)
-            SetIndividualVoteGameSettings(individualSettings);
+        RoundSetLocalSettings();
     }
-    
-    private void SetIndividualVoteGameSettings(TGameSettings settings)
+
+    protected abstract void RoundSetLocalSettings();
+
+    protected void SetLocalPlayerSettings(TPlayerSettings localPlayerSettings)
     {
         if (UsersWithIndividualGameSettings.Count == Players().Count) // todo log?
             return;
 
         var rndPlayer = GetRandomPlayerWithoutIndividualVoteGameSettings();
         UsersWithIndividualGameSettings.Add(rndPlayer.UserId);
-        UserGameSettingsMap[rndPlayer.UserId] = settings;
+        UserGameSettingsMap[rndPlayer.UserId] = localPlayerSettings;
     }
     
-    private Player GetRandomPlayerWithoutIndividualVoteGameSettings()
+    protected Player GetRandomPlayerWithoutIndividualVoteGameSettings()
         => GetRandomPlayer(Players()
             .Where(x => !UsersWithIndividualGameSettings.Contains(x.UserId))
             .OrderBy(x => x.UserId)
@@ -156,5 +166,12 @@ public abstract class LobbyGameBase<TGameSettings> : LobbyConfirmationBase
     {
         if (CurrentGameStatus == GameStatus.ShowResult && IsConfirmed())
             Context.TransitionTo(GetNextGameState());
+    }
+    
+    protected IReadOnlyCollection<string> GetUserSelectedChoices(Guid userId)
+    {
+        if (UserChoicesMap.TryGetValue(userId, out var choices))
+            return choices;
+        return [];
     }
 }

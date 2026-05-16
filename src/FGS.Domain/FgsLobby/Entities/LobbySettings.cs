@@ -1,4 +1,5 @@
 ﻿using FGS.Domain.FgsLobby.Context.GameSettings;
+using FGS.Domain.FgsLobby.Context.GameSettings.Vote;
 using FGS.Domain.FgsLobby.Enums;
 
 namespace FGS.Domain.FgsLobby.Entities;
@@ -29,9 +30,19 @@ public record LobbySettings
                         {
                             BalanceOperation = new BalanceOperation(BalanceOperationType.Addition, 25_000)
                         },
-                        RandomIndividualVoteGameSettings =
+                        RandomLocalVoteGameSettings =
                         [
-                            VoteGameSettings.Default with { CanMultiplyChoice = true, IndividualDescription = "В этом голосовании Вы можете выбрать нескольких игроков"}
+                            new PlayerVoteGameSettings
+                            {
+                                Description = null,
+                                CanSkip = false,
+                                CanSelfChoice = false,
+                                CanMultiplyChoice = true,
+                                WinnerReward = new WinnerReward
+                                {
+                                    BalanceOperation = new BalanceOperation(BalanceOperationType.Addition, 25_000)
+                                }
+                            }
                         ],
                         GameDescription = "Голосование описание ляляляля"
                     }
