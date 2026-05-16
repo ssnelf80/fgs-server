@@ -77,7 +77,7 @@ public abstract class LobbyState
             switch (LobbySettings.GamesSettings[_currentGameNumber].LobbyGameType)
             {
                 case LobbyGameType.Vote:
-                    return new LobbyVoteState(this, LobbySettings.GamesSettings[_currentGameNumber]);
+                    return new LobbyVoteState(this, LobbySettings.GamesSettings[_currentGameNumber].VoteGameSettings);
                 default: // todo поддержку остальных игр
                     throw new InvalidOperationLobbyStateException("Game type not supported");
             }

@@ -1,5 +1,6 @@
 ﻿using FGS.Domain.FgsLobby.Context.PlayerStates;
 using FGS.Domain.FgsLobby.Context.PlayerStates.GameStates;
+using FGS.Domain.FgsLobby.Context.States.Base;
 using FGS.Domain.FgsLobby.Enums;
 
 namespace FGS.Domain.FgsLobby.Context.States;

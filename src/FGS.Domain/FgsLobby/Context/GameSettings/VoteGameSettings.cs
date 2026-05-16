@@ -1,9 +1,10 @@
-﻿using FGS.Domain.FgsLobby.Entities;
+﻿using System.Text.Json.Serialization;
+using FGS.Domain.FgsLobby.Entities;
 using FGS.Domain.FgsLobby.Enums;
 
 namespace FGS.Domain.FgsLobby.Context.GameSettings;
 
-public record VoteGameSettings
+public record VoteGameSettings : IGameSettings<VoteGameSettings>
 {
     public static VoteGameSettings Default => new VoteGameSettings
     {
@@ -27,5 +28,9 @@ public record VoteGameSettings
     public required bool MultipleWinner { get; init; }
     public required WinnerReward WinnerReward { get; init; }
     public required string? IndividualDescription { get; init; } = null!;
-    public required IReadOnlyList<VoteGameSettings> RandomIndividualVoteGameSettings { get; init; } // todo отдельную сущность
+    public required IReadOnlyList<VoteGameSettings> RandomIndividualVoteGameSettings { get; init; }
+    [JsonIgnore]
+    public VoteGameSettings GlobalGameSettings => this;
+    [JsonIgnore]
+    public IReadOnlyList<VoteGameSettings> RandomIndividualGameSettings => RandomIndividualVoteGameSettings;
 }

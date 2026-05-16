@@ -1,7 +1,7 @@
 ﻿using FGS.Domain.FgsLobby.Context.Requests;
 using FGS.Domain.FgsLobby.Exceptions;
 
-namespace FGS.Domain.FgsLobby.Context.States;
+namespace FGS.Domain.FgsLobby.Context.States.Base;
 
 public abstract class LobbyConfirmationBase(LobbyState other, bool isConfirmationMode) : LobbyState(other)
 {
@@ -34,7 +34,6 @@ public abstract class LobbyConfirmationBase(LobbyState other, bool isConfirmatio
             case SetUserChoicesRequest userChoiceRequest when !IsPlayerExists(userChoiceRequest.UserId):
                 throw new LobbyStateException($"player with id = {userChoiceRequest.UserId} is not exist");
             case SetUserChoicesRequest userChoiceRequest:
-            {
                 if (userChoiceRequest.Choices.Length == 0)
                     _playerConfirmations.Remove(userChoiceRequest.UserId);
                 else
@@ -42,12 +41,10 @@ public abstract class LobbyConfirmationBase(LobbyState other, bool isConfirmatio
 
                 GoToNextGameIfNeeded();
                 return;
-            }
             case SetRandomUserChoicesRequest randomChoiceRequest when !IsPlayerExists(randomChoiceRequest.UserId):
                 throw new LobbyStateException($"player with id = {randomChoiceRequest.UserId} is not exist");
             case SetRandomUserChoicesRequest randomChoiceRequest:
                 _playerConfirmations.Add(randomChoiceRequest.UserId);
-
                 GoToNextGameIfNeeded();
                 return;
             default:

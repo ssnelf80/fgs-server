@@ -7,5 +7,6 @@ public enum LobbyGameStateTypeEnum
     ReadyToInitialize,
     GameWelcomeInformation,
     Vote,
+    RockPaperScissors,
     End
 }
