@@ -7,14 +7,15 @@ using FGS.Domain.FgsLobby.Context.States.Base;
 using FGS.Domain.FgsLobby.Enums;
 using FGS.Domain.FgsLobby.Exceptions;
 
-namespace FGS.Domain.FgsLobby.Context.States;
+namespace FGS.Domain.FgsLobby.Context.States.Vote;
 
-public sealed class LobbyVoteState(LobbyState other, VoteGameSettings gameSettings)
-    : LobbyGameBase<VoteGameSettings, PlayerVoteGameSettings>(other, gameSettings)
+public class LobbyVoteState(LobbyState other, VoteGameSettings gameSettings, bool isChildState)
+    : LobbyGameBase<VoteGameSettings, PlayerVoteGameSettings>(other, gameSettings, isChildState)
 {
     private const string SkipVariant = "SKIP";
+    private VoteStateCallbackMessage? _callbackMessage = null;
 
-    public override LobbyGameStateTypeEnum GameState => LobbyGameStateTypeEnum.Vote;
+    protected override LobbyGameStateTypeEnum GameState => LobbyGameStateTypeEnum.Vote;
 
     public override PlayerStateWrapper GetPlayerGameState(Guid userId)
     {
@@ -47,7 +48,7 @@ public sealed class LobbyVoteState(LobbyState other, VoteGameSettings gameSettin
                 LobbyGameType = GameState,
                 GameNumber = CurrentGameNumber,
                 Message = GameSettings.GlobalGameSettings.GameDescription,
-                GameState =
+                GameState = // todo {nazarov} v
                     new ConfirmationState(
                         IsPlayerConfirm(userId)) // todo {nazarov} нужен отдельный тип для показа результата
             },
@@ -61,14 +62,14 @@ public sealed class LobbyVoteState(LobbyState other, VoteGameSettings gameSettin
         var variants = GetValidUserChoices(userId);
         if (!UserGameSettingsMap[userId].CanMultiplyChoice)
         {
-            result.Add(variants[Random.Next(0, variants.Count)]);
+            result.Add(GetRandomItem(variants));
         }
         else // множественный выбор
         {
             var countOfRandomChoices = Random.Next(1, variants.Count);
             for (var i = 0; i < countOfRandomChoices; i++)
             {
-                result.Add(variants[Random.Next(0, variants.Count)]);
+                result.Add(GetRandomItem(variants));
                 variants = variants.Where(x => !result.Contains(x)).ToList();
             }
 
@@ -88,6 +89,8 @@ public sealed class LobbyVoteState(LobbyState other, VoteGameSettings gameSettin
                 continue;
             choicesCount[Guid.Parse(choice)]++;
         }
+
+        _callbackMessage = new VoteStateCallbackMessage(choicesCount);
 
         var maxValue = choicesCount.Values.Max();
         var winnersIds = choicesCount
@@ -143,4 +146,7 @@ public sealed class LobbyVoteState(LobbyState other, VoteGameSettings gameSettin
 
         return variants;
     }
+
+    protected override IStateCallbackMessage GetLobbyCallbackMessage() 
+        => _callbackMessage is null ? NotReadyStateCallbackMessage.Instance : _callbackMessage;
 }

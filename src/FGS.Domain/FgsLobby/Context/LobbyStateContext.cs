@@ -10,7 +10,7 @@ public class LobbyStateContext
 {
     private LobbyState _state = null!;
     
-    public LobbyGameStateTypeEnum Status => _state.GameState;
+    public LobbyGameStateTypeEnum Status => _state.GetGameState();
 
     private LobbyStateContext(LobbyState state)
     {

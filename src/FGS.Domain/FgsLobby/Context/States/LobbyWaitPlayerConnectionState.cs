@@ -15,7 +15,7 @@ public class LobbyWaitPlayerConnectionState : LobbyState
         InitRandom(lobbySettings.RandomizerSeed);
     }
 
-    public override LobbyGameStateTypeEnum GameState => LobbyGameStateTypeEnum.WaitPlayers;
+    protected override LobbyGameStateTypeEnum GameState => LobbyGameStateTypeEnum.WaitPlayers;
 
     public override PlayerStateWrapper GetPlayerGameState(Guid userId)
     {

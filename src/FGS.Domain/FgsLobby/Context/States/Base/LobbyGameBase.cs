@@ -32,7 +32,7 @@ public abstract class LobbyGameBase<TGameSettings, TPlayerSettings> : LobbyConfi
     protected readonly Dictionary<Guid, TPlayerSettings> UserGameSettingsMap = [];
     protected readonly HashSet<Guid> UsersWithIndividualGameSettings = [];
 
-    protected LobbyGameBase(LobbyState other, IGameSettings<TGameSettings, TPlayerSettings> gameSettings) : base(other, false)
+    protected LobbyGameBase(LobbyState other, IGameSettings<TGameSettings, TPlayerSettings> gameSettings, bool isChildState) : base(other, isChildState, false)
     {
         GameSettings = gameSettings;
         InitUserGameSettings();

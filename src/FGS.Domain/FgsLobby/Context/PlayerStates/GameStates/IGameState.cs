@@ -6,6 +6,7 @@ namespace FGS.Domain.FgsLobby.Context.PlayerStates.GameStates;
 [JsonDerivedType(typeof(VoteState))]
 [JsonDerivedType(typeof(EmptyState))]
 [JsonDerivedType(typeof(WaitPlayerConnectionState))]
+[JsonDerivedType(typeof(VoteResultState))]
 public interface IGameState
 {
     PlayerGameStateTypeEnum PlayerGameStateTypeEnum { get; } 

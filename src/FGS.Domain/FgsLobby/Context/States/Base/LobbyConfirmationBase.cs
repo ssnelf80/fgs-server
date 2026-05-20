@@ -3,7 +3,7 @@ using FGS.Domain.FgsLobby.Exceptions;
 
 namespace FGS.Domain.FgsLobby.Context.States.Base;
 
-public abstract class LobbyConfirmationBase(LobbyState other, bool isConfirmationMode) : LobbyState(other)
+public abstract class LobbyConfirmationBase(LobbyState other, bool isChildState, bool isConfirmationMode) : LobbyState(other, isChildState)
 {
     protected bool IsConfirmationMode { get; set; } = isConfirmationMode;
     private readonly HashSet<Guid> _playerConfirmations = [];

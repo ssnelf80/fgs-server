@@ -4,9 +4,9 @@ using FGS.Domain.FgsLobby.Enums;
 
 namespace FGS.Domain.FgsLobby.Context.States;
 
-public class LobbyEndState(LobbyState other) : LobbyState(other)
+public class LobbyEndState(LobbyState other) : LobbyState(other, false)
 {
-    public override LobbyGameStateTypeEnum GameState => LobbyGameStateTypeEnum.End;
+    protected override LobbyGameStateTypeEnum GameState => LobbyGameStateTypeEnum.End;
     public override PlayerStateWrapper GetPlayerGameState(Guid userId)
     {
         var player = GetPlayer(userId);

@@ -2,13 +2,12 @@
 using FGS.Domain.FgsLobby.Context.PlayerStates.GameStates;
 using FGS.Domain.FgsLobby.Context.Requests;
 using FGS.Domain.FgsLobby.Enums;
-using FGS.Domain.FgsLobby.Exceptions;
 
 namespace FGS.Domain.FgsLobby.Context.States;
 
-public class LobbyInitializeState(LobbyState other) : LobbyState(other)
+public class LobbyInitializeState(LobbyState other) : LobbyState(other, false)
 {
-    public override LobbyGameStateTypeEnum GameState => LobbyGameStateTypeEnum.ReadyToInitialize;
+    protected override LobbyGameStateTypeEnum GameState => LobbyGameStateTypeEnum.ReadyToInitialize;
 
     public override void Handle(ILobbyContextRequest request)
     {

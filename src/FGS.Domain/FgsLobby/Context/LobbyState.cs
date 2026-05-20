@@ -1,6 +1,7 @@
 ﻿using FGS.Domain.FgsLobby.Context.PlayerStates;
 using FGS.Domain.FgsLobby.Context.Requests;
 using FGS.Domain.FgsLobby.Context.States;
+using FGS.Domain.FgsLobby.Context.States.Vote;
 using FGS.Domain.FgsLobby.Entities;
 using FGS.Domain.FgsLobby.Enums;
 using FGS.Domain.FgsLobby.Exceptions;
@@ -9,11 +10,21 @@ namespace FGS.Domain.FgsLobby.Context;
 
 public abstract class LobbyState
 {
-    protected static IReadOnlyCollection<string> ConfirmationChoice = ["y"];
+    private readonly LobbyState? _previousState = null;
+    private readonly bool _isChildState = false;
     private LobbyStateContext? _context;
     protected LobbyStateContext Context => _context ?? throw new InvalidInnerCallLobbyStateException("Context is not initialized");
     
-    public abstract LobbyGameStateTypeEnum GameState { get; }
+    protected abstract LobbyGameStateTypeEnum GameState { get; }
+    public LobbyGameStateTypeEnum GetGameState()
+    {
+        if (!_isChildState)
+            return GameState;
+
+        if (_previousState is null)
+            throw new InvalidOperationLobbyStateException("Previous state not initialized");
+        return _previousState.GetGameState();
+    }
 
     private const int GamesNotStarted = -1;
     private int _currentGameNumber = GamesNotStarted;
@@ -23,13 +34,21 @@ public abstract class LobbyState
     private readonly Dictionary<Guid, Player> _playersMap = [];
     private Random? _rnd = null;
     protected Random Random => _rnd ?? throw new InvalidInnerCallLobbyStateException("Lobby rand generator is not initialized");
-    
-    protected LobbyState(LobbyState other) : this(other.LobbySettings, other._playersMap)
+
+
+    protected LobbyState(LobbyState other, bool isChildState) : this(other.LobbySettings, other._playersMap)
     {
+        if (isChildState)
+        {
+            _isChildState = true;
+            _previousState = other;
+        }
+        
         _context = other.Context;
         _rnd = other._rnd;
         _currentGameNumber = other._currentGameNumber;
     }
+    
     protected LobbyState(
         LobbySettings lobbySettings, 
         Dictionary<Guid, Player> playersMap,
@@ -64,10 +83,21 @@ public abstract class LobbyState
     protected IReadOnlyList<Player> Players()  => _playersMap.Values.OrderBy(x=> x.UserId).ToList().AsReadOnly();
     protected IReadOnlyList<Player> InnocentPlayers() => _playersMap.Values.Where(x=> x.Role == PlayerRole.Innocent).OrderBy(x=> x.UserId).ToList().AsReadOnly();
     protected IReadOnlyList<Player> BotPlayers() => _playersMap.Values.Where(x => x.IsBot).OrderBy(x => x.UserId).ToList().AsReadOnly();
-    protected Player GetRandomPlayer(IReadOnlyList<Player> players) => players[Random.Next(0, players.Count)];
+    protected Player GetRandomPlayer(IReadOnlyList<Player> players) => GetRandomItem(players);
+
+    protected T GetRandomItem<T>(IReadOnlyList<T> items) => items[Random.Next(0, items.Count)];
 
     protected LobbyState GetNextGameState()
     {
+        if (_isChildState)
+        {
+            if (_previousState is null)
+                throw new InvalidOperationLobbyStateException("Previous state not initialized");
+            
+            _previousState.ApplyCallbackMessage(GetLobbyCallbackMessage());
+            return _previousState;
+        }
+        
         if (LobbySettings.GamesSettings.Count == 0)
             return new LobbyEndState(this);
         
@@ -77,7 +107,10 @@ public abstract class LobbyState
             switch (LobbySettings.GamesSettings[_currentGameNumber].LobbyGameType)
             {
                 case LobbyGameType.Vote:
-                    return new LobbyVoteState(this, LobbySettings.GamesSettings[_currentGameNumber].VoteGameSettings);
+                    return new LobbyVoteState(this, LobbySettings.GamesSettings[_currentGameNumber].VoteGameSettings, false);
+                case LobbyGameType.RockPaperScissors:
+                    return new LobbyRockPaperScissorsState(this,
+                        LobbySettings.GamesSettings[_currentGameNumber].RockPaperScissorsSettings);
                 default: // todo поддержку остальных игр
                     throw new InvalidOperationLobbyStateException("Game type not supported");
             }
@@ -153,5 +186,13 @@ public abstract class LobbyState
             default:
                 throw new InvalidOperationLobbyStateException(request.GetType().Name);
         }
+    }
+
+    protected virtual IStateCallbackMessage GetLobbyCallbackMessage() => EmptyStateCallbackMessage.Instance;
+
+    protected virtual void ApplyCallbackMessage(IStateCallbackMessage message)
+    {
+        if (message is NotReadyStateCallbackMessage)
+            throw new InvalidOperationLobbyStateException("Callback message is not ready");
     }
 }

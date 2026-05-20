@@ -7,13 +7,13 @@ namespace FGS.Domain.FgsLobby.Context.States;
 
 public sealed class LobbyWelcomeState : LobbyConfirmationBase
 {
-    public LobbyWelcomeState(LobbyState other) : base(other, true)
+    public LobbyWelcomeState(LobbyState other) : base(other, false, true)
     {
         DoBotActions();
         GoToNextGameIfNeeded();
     }
 
-    public override LobbyGameStateTypeEnum GameState => LobbyGameStateTypeEnum.GameWelcomeInformation;
+    protected override LobbyGameStateTypeEnum GameState => LobbyGameStateTypeEnum.GameWelcomeInformation;
 
     protected override void GoToNextGameIfNeeded()
     {
