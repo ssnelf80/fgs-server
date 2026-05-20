@@ -35,7 +35,6 @@ public abstract class LobbyState
     private Random? _rnd = null;
     protected Random Random => _rnd ?? throw new InvalidInnerCallLobbyStateException("Lobby rand generator is not initialized");
 
-
     protected LobbyState(LobbyState other, bool isChildState) : this(other.LobbySettings, other._playersMap)
     {
         if (isChildState)
