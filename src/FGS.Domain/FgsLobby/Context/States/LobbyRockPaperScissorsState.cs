@@ -61,14 +61,11 @@ public class LobbyRockPaperScissorsState(LobbyState other, RockPaperScissorsSett
         if (currentUserSettings.PaidChoice)
         {
             List<string> paidChoices = [];
-            foreach (var casualChoice in result)
-            {
-                foreach (var historyChoice in UserChoicesHistory[userId])
-                {
-                    paidChoices.Add($"{casualChoice}{Delimiter}{historyChoice}");
-                }
-            }
-           
+            paidChoices.AddRange(
+                from casualChoice in result 
+                from historyChoice in UserChoicesHistory[userId] 
+                select $"{casualChoice}{Delimiter}{historyChoice}");
+
             result.AddRange(paidChoices);
         }
         
