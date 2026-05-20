@@ -4,31 +4,38 @@ using FGS.Domain.FgsLobby.Context.PlayerStates;
 using FGS.Domain.FgsLobby.Context.Requests;
 using FGS.Domain.FgsLobby.Context.States.Base;
 using FGS.Domain.FgsLobby.Enums;
+using FGS.Domain.FgsLobby.Exceptions;
 
 namespace FGS.Domain.FgsLobby.Context.States;
 
 public class LobbyRockPaperScissorsState(LobbyState other, RockPaperScissorsSettings gameSettings)
-    : LobbyGameBase<RockPaperScissorsSettings, PlayerRockPaperScissorsSettings>(other, gameSettings)
+    : LobbyGameBase<RockPaperScissorsSettings, PlayerRockPaperScissorsSettings>(other, gameSettings, false)
 {
     private const string Rock = "Rock";
     private const string Paper = "Paper";
     private const string Scissors = "Scissors";
+    private const string Delimiter = "|";
+
+    private readonly IReadOnlyList<string> _defaultChoicesMap = 
+    [
+        Rock,
+        Paper,
+        Scissors
+    ];
+
+    private Dictionary<Guid, IReadOnlyList<string>> UserChoicesHistory { get; init; } = [];
     
-    private Dictionary<Guid, IReadOnlyList<string>> UserChoicesHistory { get; init; }
-    
-    public override LobbyGameStateTypeEnum GameState => LobbyGameStateTypeEnum.RockPaperScissors;
+    protected override LobbyGameStateTypeEnum GameState => LobbyGameStateTypeEnum.RockPaperScissors;
     public override PlayerStateWrapper GetPlayerGameState(Guid userId)
     {
         throw new NotImplementedException();
     }
 
-    protected override IReadOnlyList<string> GetUserRandomChoices(Guid userId)
-    {
-        throw new NotImplementedException();
-    }
+    protected override IReadOnlyList<string> GetUserRandomChoices(Guid userId) => [GetRandomItem(GetValidUserChoices(userId))];
 
     protected override GameStatus SetResult()
     {
+        //var currentRoundSettings = GameSettings.GlobalGameSettings.RoundGameSettings[RoundNumber];
         throw new NotImplementedException();
     }
 
@@ -37,9 +44,34 @@ public class LobbyRockPaperScissorsState(LobbyState other, RockPaperScissorsSett
         throw new NotImplementedException();
     }
 
-
     protected override ValidationResult Validate(SetUserChoicesRequest request)
     {
-        throw new NotImplementedException();
+        if (!request.Choices.All(choice =>
+                GetValidUserChoices(request.UserId).Contains(choice)))
+            return ValidationResult.Failure(new InvalidOperationLobbyStateException("Invalid user choice"));
+        
+        return ValidationResult.Success;
+    }
+
+    private IReadOnlyList<string> GetValidUserChoices(Guid userId)
+    {
+        var result = _defaultChoicesMap.Except(UserChoicesHistory[userId]).ToList();
+        var currentUserSettings = UserGameSettingsMap[userId];
+
+        if (currentUserSettings.PaidChoice)
+        {
+            List<string> paidChoices = [];
+            foreach (var casualChoice in result)
+            {
+                foreach (var historyChoice in UserChoicesHistory[userId])
+                {
+                    paidChoices.Add($"{casualChoice}{Delimiter}{historyChoice}");
+                }
+            }
+           
+            result.AddRange(paidChoices);
+        }
+        
+        return result;
     }
 }

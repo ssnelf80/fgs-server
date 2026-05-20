@@ -5,5 +5,6 @@ public enum PlayerGameStateTypeEnum
     WaitPlayerConnection,
     Confirmation,
     Vote,
+    VoteResult,
     Empty
 }

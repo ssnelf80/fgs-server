@@ -6,9 +6,9 @@ using FGS.Domain.FgsLobby.Exceptions;
 
 namespace FGS.Domain.FgsLobby.Context.States;
 
-public class LobbyInitializeState(LobbyState other) : LobbyState(other)
+public class LobbyInitializeState(LobbyState other) : LobbyState(other, false)
 {
-    public override LobbyGameStateTypeEnum GameState => LobbyGameStateTypeEnum.ReadyToInitialize;
+    protected override LobbyGameStateTypeEnum GameState => LobbyGameStateTypeEnum.ReadyToInitialize;
 
     public override void Handle(ILobbyContextRequest request)
     {
