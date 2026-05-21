@@ -86,7 +86,7 @@ public abstract class LobbyState
 
     protected T GetRandomItem<T>(IReadOnlyList<T> items) => items[Random.Next(0, items.Count)];
 
-    protected LobbyState GetNextGameState()
+    protected virtual LobbyState GetNextGameState() // todo parent должен оверрайдить
     {
         if (_isChildState)
         {

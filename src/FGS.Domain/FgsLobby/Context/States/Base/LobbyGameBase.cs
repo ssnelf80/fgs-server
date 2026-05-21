@@ -13,14 +13,15 @@ public abstract class LobbyGameBase<TGameSettings, TPlayerSettings> : LobbyConfi
     protected enum GameStatus
     {
         InGame,
-        ShowResult
+        ShowResult, // todo статус для перехода к следующему раунду
+        LastShowResult
     }
     protected GameStatus CurrentGameStatus
     {
         get;
         set
         {
-            if (value == GameStatus.ShowResult)
+            if (value == GameStatus.LastShowResult)
                 IsConfirmationMode = true;
 
             field = value;
@@ -77,14 +78,9 @@ public abstract class LobbyGameBase<TGameSettings, TPlayerSettings> : LobbyConfi
                 $"can't set result: {CurrentGameStatus} and {UserChoicesMap.Count}/{Players().Count}");
         
         CurrentGameStatus = SetResult();
-
+        
         if (CurrentGameStatus == GameStatus.InGame)
-        {
-            RoundNumber++;
-            UserGameSettingsMap.Clear();
-            UserChoicesMap.Clear();
-            InitUserGameSettings();
-        }
+            throw new InvalidOperationLobbyStateException($"Invalid game status after setting  {CurrentGameStatus}");
     }
 
     private bool CanSetResult() => CurrentGameStatus == GameStatus.InGame && UserChoicesMap.Count == Players().Count;
@@ -99,14 +95,15 @@ public abstract class LobbyGameBase<TGameSettings, TPlayerSettings> : LobbyConfi
 
     protected abstract void RoundSetLocalSettings();
 
-    protected void SetLocalPlayerSettings(TPlayerSettings localPlayerSettings)
+    protected Guid? SetLocalPlayerSettings(TPlayerSettings localPlayerSettings)
     {
         if (UsersWithIndividualGameSettings.Count == Players().Count) // todo log?
-            return;
+            return null;
 
         var rndPlayer = GetRandomPlayerWithoutIndividualVoteGameSettings();
         UsersWithIndividualGameSettings.Add(rndPlayer.UserId);
         UserGameSettingsMap[rndPlayer.UserId] = localPlayerSettings;
+        return rndPlayer.UserId;
     }
     
     protected Player GetRandomPlayerWithoutIndividualVoteGameSettings()
@@ -117,7 +114,7 @@ public abstract class LobbyGameBase<TGameSettings, TPlayerSettings> : LobbyConfi
 
     public sealed override void Handle(ILobbyContextRequest request)
     {
-        if (CurrentGameStatus == GameStatus.ShowResult)
+        if (CurrentGameStatus == GameStatus.LastShowResult)
         {
             base.Handle(request);
             return;
@@ -164,8 +161,18 @@ public abstract class LobbyGameBase<TGameSettings, TPlayerSettings> : LobbyConfi
     
     protected sealed override void GoToNextGameIfNeeded()
     {
-        if (CurrentGameStatus == GameStatus.ShowResult && IsConfirmed())
-            Context.TransitionTo(GetNextGameState());
+        switch (CurrentGameStatus)
+        {
+            case GameStatus.ShowResult:
+                RoundNumber++;
+                UserGameSettingsMap.Clear();
+                UserChoicesMap.Clear();
+                InitUserGameSettings();
+                break;
+            case GameStatus.LastShowResult when IsConfirmed():
+                Context.TransitionTo(GetNextGameState());
+                break;
+        }
     }
     
     protected IReadOnlyCollection<string> GetUserSelectedChoices(Guid userId)

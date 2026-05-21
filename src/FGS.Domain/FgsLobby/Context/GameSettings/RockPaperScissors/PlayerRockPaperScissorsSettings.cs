@@ -2,9 +2,8 @@
 
 public record PlayerRockPaperScissorsSettings
 {
+    public RockPaperScissorsPlayerModeEnum PlayerMode { get; init; }
     public required string? Description { get; init; }
-    public required bool FeeChoice { get; init; } 
-    public required bool PaidChoice { get; init; }
-    public required bool LoseAsWin { get; init; }
     public required WinnerReward WinnerReward { get; init; }
+    public required IReadOnlyList<string> TriggerChoices { get; init; }
 }

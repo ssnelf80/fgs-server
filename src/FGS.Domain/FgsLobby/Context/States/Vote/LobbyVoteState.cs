@@ -41,7 +41,7 @@ public class LobbyVoteState(LobbyState other, VoteGameSettings gameSettings, boo
                         IndividualDescription = individualSettings.Description,
                     }
             },
-            GameStatus.ShowResult => new PlayerStateWrapper
+            GameStatus.LastShowResult => new PlayerStateWrapper
             {
                 Balance = player.Balance,
                 PlayerRole = player.Role,
@@ -99,12 +99,12 @@ public class LobbyVoteState(LobbyState other, VoteGameSettings gameSettings, boo
             .ToList();
 
         if (choicesCount[winnersIds[0]] == 0) // у победителя ноль голосов
-            return GameStatus.ShowResult;
+            return GameStatus.LastShowResult;
         if (!GameSettings.GlobalGameSettings.MultipleWinner && winnersIds.Count > 1) // несколько победителей
-            return GameStatus.ShowResult;
+            return GameStatus.LastShowResult;
         
         ApplyWinnerReward(winnersIds);
-        return GameStatus.ShowResult;
+        return GameStatus.LastShowResult;
     }
 
     protected override void RoundSetLocalSettings()

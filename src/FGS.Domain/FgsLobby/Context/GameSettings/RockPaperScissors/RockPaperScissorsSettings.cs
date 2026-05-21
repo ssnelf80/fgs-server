@@ -6,8 +6,7 @@ public record RockPaperScissorsSettings : IGameSettings<RockPaperScissorsSetting
 {
     public required string GameDescription { get; init; }
     public required WinnerReward WinnerReward { get; init; }
-    public required string? IndividualDescription { get; init; } = null!;
-
+    
     public required IReadOnlyList<RockPaperScissorsRoundSettings> RoundGameSettings { get; init; } = [];
     
     [JsonIgnore]
@@ -17,9 +16,8 @@ public record RockPaperScissorsSettings : IGameSettings<RockPaperScissorsSetting
     public PlayerRockPaperScissorsSettings DefaultPlayerSettings => new()
     {
         Description = null,
-        FeeChoice = false,
-        PaidChoice = false,
-        LoseAsWin = false,
-        WinnerReward = WinnerReward
+        PlayerMode = RockPaperScissorsPlayerModeEnum.Default,
+        WinnerReward = WinnerReward,
+        TriggerChoices = []
     };
 }
