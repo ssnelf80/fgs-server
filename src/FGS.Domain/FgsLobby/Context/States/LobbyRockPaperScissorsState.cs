@@ -50,8 +50,39 @@ public class LobbyRockPaperScissorsState(LobbyState other, RockPaperScissorsSett
         }
         
         // базовый расчет победителя
-        
-        // проигрыш == победе
+        var roundResult = new Dictionary<string, int>()
+        {
+            { Rock, UserChoicesMap.Values.Count(x => NormalizeUserChoices(x) == Rock) },
+            { Paper, UserChoicesMap.Values.Count(x => NormalizeUserChoices(x) == Paper) },
+            { Scissors, UserChoicesMap.Values.Count(x => NormalizeUserChoices(x) == Scissors) }
+        };
+
+        foreach (var player in Players())
+        {
+            var diff = GetWinLooseDiff(
+                roundResult,
+                NormalizeUserChoices(UserChoicesMap[player.UserId]),
+                UserGameSettingsMap[player.UserId].PlayerMode == RockPaperScissorsPlayerModeEnum.LoseAsWin);
+
+            var rewardOperation = UserGameSettingsMap[player.UserId].WinnerReward.BalanceOperation;
+            switch (diff)
+            {
+                case 0:
+                    continue;
+                case > 0:
+                    ChangeBalance(player.UserId, rewardOperation with
+                    {
+                        Value = diff * rewardOperation.Value
+                    });
+                    break;
+                case < 0:
+                    ChangeBalance(player.UserId, rewardOperation.Invert() with
+                    {
+                        Value = diff * rewardOperation.Value * -1
+                    });
+                    break;
+            }
+        }
         
         // вовзрат к игре или же окончание, в зависимости от номера раунда
         return RoundNumber == LastRoundNumber ? GameStatus.LastShowResult : GameStatus.ShowResult;
@@ -86,7 +117,6 @@ public class LobbyRockPaperScissorsState(LobbyState other, RockPaperScissorsSett
                 };
             }
         }
-            
     }
 
     protected override ValidationResult Validate(SetUserChoicesRequest request)
@@ -99,6 +129,46 @@ public class LobbyRockPaperScissorsState(LobbyState other, RockPaperScissorsSett
             return ValidationResult.Failure(new InvalidOperationLobbyStateException("User not support multiply choices"));
         
         return ValidationResult.Success;
+    }
+
+    private int GetWinLooseDiff(IReadOnlyDictionary<string, int> roundResult, string userChoice, bool loseAsWin)
+    {
+        var diff = 0;
+        switch (userChoice)
+        {
+            case Rock:
+                diff += roundResult[Scissors] - roundResult[Paper];
+                if (loseAsWin)
+                    diff += 2 * roundResult[Paper];
+                break;
+            case Paper:
+                diff += roundResult[Rock] - roundResult[Scissors];
+                if (loseAsWin)
+                    diff += 2 * roundResult[Scissors];
+                break;
+            case Scissors:
+                diff += roundResult[Paper] - roundResult[Rock];
+                if (loseAsWin)
+                    diff += 2 * roundResult[Rock];
+                break;
+            default:
+                throw new InvalidOperationLobbyStateException($"Invalid user choice {userChoice}");
+        }
+        return diff;
+    }
+
+    private string NormalizeUserChoices(IReadOnlyList<string> userChoices)
+    {
+        if (userChoices.Count != 1)
+            throw new InvalidOperationLobbyStateException("Invalid count of user choices");
+
+        return userChoices[0] switch
+        {
+            _ when userChoices[0].EndsWith(Rock) => Rock,
+            _ when userChoices[0].EndsWith(Paper) => Paper,
+            _ when userChoices[0].EndsWith(Scissors) => Scissors,
+            _ => throw new InvalidOperationLobbyStateException($"Invalid user choice {userChoices[0]}")
+        };
     }
 
     private IReadOnlyList<string> GetValidUserChoices(Guid userId)
